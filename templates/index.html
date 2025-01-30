@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palpites Mega Sena</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Palpites - Mega Sena</h1>
+        
+        <div class="instructions">
+            <h2>Como usar:</h2>
+            <p>1. Digite 18 números únicos entre 01 e 60</p>
+            <p>2. Os números serão validados automaticamente</p>
+            <p>3. Após preencher todos os números, serão geradas as combinações:</p>
+            <ul>
+                <li>Jogos Normais (seus números divididos em 3 jogos)</li>
+                <li>Jogos +1 (cada número aumentado em uma unidade)</li>
+                <li>Jogos -1 (cada número diminuído em uma unidade)</li>
+                <li>Jogos Aleatórios (4 jogos baseados nas variações)</li>
+            </ul>
+        </div>
+
+        <div class="input-section">
+            <h2>Digite 18 números (01-60):</h2>
+            <div class="number-inputs"></div>
+        </div>
+
+        <div class="results" style="display: none;">
+            <h2>Seus Jogos</h2>
+            
+            <div class="games-section">
+                <h3>Jogos Normais</h3>
+                <div id="original-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: green;">+1</span></h3>
+                <div id="plus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
+                <div id="minus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos Aleatórios</h3>
+                <div id="random-games" class="games-grid"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button onclick="exportToTxt()">Exportar para TXT</button>
+                <button onclick="exportToExcel()">Exportar para Excel</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

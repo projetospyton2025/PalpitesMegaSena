@@ -1,0 +1,33 @@
+Linguagem: Python com interface web
+
+Objetivo: Digitar 18 numeros um em cada coluna, sendo que para cada digitacao a proxim coluna seja ativada automaticamente. A validacao sera 01 a 60 para cada coluna nao podendo ter repeticao de dezenas - se tiver a validacao deve ser em tempo real com a informacao em vermelho.
+
+
+
+A partir destes numeros digitados o usuario ira clicar em um botao chamado gerar jogos e o sistema ira dividir estes numeros em grupo de 6 para formar uma tabela com jogos (mega sena)
+Jogo A,B,C com o titulo Jogo Normal
+
+Depois ao clicar em um botao o sistema devera usar a primeira tabela criada para criar mais duas a diferenca é que a segunda acrescentando uma unidade a cada numero e a terceira tirando uma unidade cada uma. 
+
+E depois o usuario clicara em mais um botao para que seja criado a quarta tabela sendo que esta tabela pegara aleatoriamente os numeros gerados na segunda e terceira tabela 
+
+Tudo isso em ordem crescente.
+
+Em relacao aos botoes nao precisa ser nescessariamente como eu descrevi, fica a seu criterio disponibilizaevos botoes e a logica. Quanto maus facil ficar melhor. O sistema tbm devera trazer uma breve explicacao de como usar e o que ele faz...
+
+Nome do script PalpitesMegaSena
+Traga a estrutura de pastas/arquivos 
+Crie um script ×.ps1 para ser executado para
+Criar as pastas/arquivos
+Criar o ambiente virtual
+Ativar o ambiente virtual
+Instalar o requeriments.txt (o usuario deve ser informado para adicionar as dependencias antes de ser insatalado o arquivo ou se vc for inteligente o suficiente que ja traga o requeriments preenchido e instalado
+
+Tbm me mostre onde colocar cada conteudo
+
+
+Resumindo
+Usuario digita 18 dezenas 01, 20, 47, 50, 60...
+Usuario clica em um botao e é  gerado duas tabelas dividida em 3 jogos cada (ou quando usuario digitar o ultimo numero o sistema ja gera estas duas tabelas um com um unidade acrescida nos numeros e outra com uma unidade reduzida para cada numero) e tbm ja pode gerar a quarta tabela com 4 jogos com 6 dezenas cada.
+
+4 jogos com 06 dezenas unicas em ordem crescente pronta para serem baixadas em ×.html txt ou xlsx e separadas para caberem em cada celula no execel ou seja sem virgula traco aoenas espacos entre elas..

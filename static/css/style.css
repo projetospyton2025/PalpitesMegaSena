@@ -1,0 +1,412 @@
+/* body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.instructions {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.number-inputs {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.number-input {
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    font-size: 20px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+}
+
+.number-input.error {
+    border-color: #ff0000;
+    background-color: #ffe6e6;
+}
+
+.games-section {
+    margin-bottom: 30px;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.game-card {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.game-numbers {
+    font-size: 18px;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0052a3;
+}
+
+.error-message {
+    color: #ff0000;
+    font-size: 14px;
+    margin-top: 5px;
+} */
+
+
+
+/* Reset e configurações base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+/* Container principal com responsividade */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Títulos centralizados */
+h1, h2, h3, h4 {
+    text-align: center;
+    margin: 15px 0;
+}
+
+/* Instruções */
+.instructions {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+    font-size: 0.9em;
+}
+
+/* Grade de inputs responsiva */
+.number-inputs {
+    display: grid;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Responsividade da grade de inputs */
+@media (min-width: 320px) { /* Smartwatch/Small Mobile */
+    .number-inputs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 375px) { /* Mobile */
+    .number-inputs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 768px) { /* Tablet */
+    .number-inputs {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (min-width: 1024px) { /* Desktop/TV */
+    .number-inputs {
+        grid-template-columns: repeat(9, 1fr);
+    }
+}
+
+/* Estilo dos inputs */
+.number-input {
+    width: 100%;
+    height: 45px;
+    text-align: center;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.number-input.error {
+    border-color: #ff0000;
+    background-color: #ffe6e6;
+}
+
+/* Seções de jogos */
+.games-section {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* AQUI INICIO */
+/* Cores para diferentes tipos de jogos */
+/* Estilos para títulos dos cards */
+.game-title {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+/* Cores específicas para títulos dos cards */
+.original-games-title {
+    color: #0066cc;
+}
+
+.plus-one-games-title {
+    color: #008000;
+}
+
+.minus-one-games-title {
+    color: #cc6600;
+}
+
+.random-games-title {
+    color: #0066cc;
+}
+
+/* AQUI INICIO */
+
+
+
+/* Cores para diferentes tipos de jogos */
+/* Estilos para Jogos Normais */
+.games-section:nth-of-type(1) {
+    background-color: #e6f3ff; /* Azul claro para fundo */
+}
+.games-section:nth-of-type(1) h3 {
+    color: #0066cc; /* Azul escuro para título */
+}
+.games-section:nth-of-type(1) .game-numbers {
+    color: #0066cc; /* Azul escuro para números */
+}
+
+/* Estilos para Jogos +1 */
+.games-section:nth-of-type(2) {
+    background-color: #e6ffe6; /* Verde claro para fundo */
+}
+.games-section:nth-of-type(2) h3 {
+    color: #008000; /* Verde escuro para título */
+}
+.games-section:nth-of-type(2) .game-numbers {
+    color: #008000; /* Verde escuro para números */
+}
+
+/* Estilos para Jogos -1 */
+.games-section:nth-of-type(3) {
+    background-color: #fff2e6; /* Laranja claro para fundo */
+}
+.games-section:nth-of-type(3) h3 {
+    color: #cc6600; /* Laranja escuro para título */
+}
+.games-section:nth-of-type(3) .game-numbers {
+    color: #cc6600; /* Laranja escuro para números */
+}
+
+/* Estilos para Jogos Aleatórios */
+.games-section:nth-of-type(4) {
+    background-color: #e6f3ff; /* Azul claro para fundo */
+}
+.games-section:nth-of-type(4) h3 {
+    color: #0066cc; /* Azul escuro para título */
+}
+.games-section:nth-of-type(4) .game-numbers {
+    color: #0066cc; /* Azul escuro para números */
+}
+
+/* Grid de jogos responsivo */
+.games-grid {
+    display: grid;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+@media (min-width: 320px) { /* Smartwatch/Small Mobile */
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 768px) { /* Tablet */
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) { /* Desktop/TV */
+    .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Cards dos jogos */
+.game-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Números dos jogos */
+.game-numbers {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #0066cc;
+    padding: 10px;
+    letter-spacing: 2px;
+}
+
+/* Cores diferentes para Jogos +1 e -1 */
+.games-section:nth-of-type(2) .game-numbers {
+    color: #008000; /* Verde para Jogos +1 */
+}
+
+.games-section:nth-of-type(3) .game-numbers {
+    color: #cc6600; /* Laranja para Jogos -1 */
+}
+
+/* Botões de exportação */
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0052a3;
+}
+
+/* Mensagens de erro */
+.error-message {
+    color: #ff0000;
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
+}
+
+/* Media Query para telas muito pequenas (smartwatch) */
+@media (max-width: 320px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    h2 {
+        font-size: 1.3em;
+    }
+    
+    h3 {
+        font-size: 1.1em;
+    }
+    
+    .number-input {
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .instructions {
+        font-size: 0.8em;
+    }
+    
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
+/* Media Query para TV (telas muito grandes) */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    body {
+        font-size: 18px;
+    }
+    
+    .number-input {
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .game-numbers {
+        font-size: 1.5em;
+    }
+    
+    button {
+        padding: 15px 30px;
+        font-size: 20px;
+    }
+}

@@ -1,0 +1,19 @@
+		<div class="input-section">
+            <h2>Digite 15 números (0-9):</h2>
+            <div class="number-inputs">
+                <!-- JavaScript will generate input fields -->
+            </div><br />
+			
+			
+			
+			try {
+        showLoading(); // Mostra o indicador de carregamento
+        
+        // Obtém os números inseridos
+        const inputs = document.querySelectorAll('.number-inputs input');
+        const numbers = Array.from(inputs).map(input => parseInt(input.value));
+        
+        if (numbers.some(isNaN)) {
+            alert('Por favor, preencha todos os números.');
+            return;
+        }
