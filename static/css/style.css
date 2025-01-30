@@ -126,13 +126,26 @@ h1, h2, h3, h4 {
     margin: 15px 0;
 }
 
-/* Instruções */
+/*
 .instructions {
     background-color: #f8f9fa;
     padding: 15px;
     border-radius: 4px;
     margin: 15px 0;
-    font-size: 0.9em;
+    font-size: 1em;
+    line-height: 35px;
+}
+*/
+
+.container, instrucaoes {
+    background-color: #f9f9f9; /* Fundo cinza claro */
+    border-radius: 12px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
+    padding: 20px; /* Espaçamento interno */
+    text-align: left; /* Centraliza o texto */
+    font-family: Arial, sans-serif; /* Fonte padrão */
+    color: #333; /* Cor do texto */
+    line-height: 35px;
 }
 
 /* Grade de inputs responsiva */
@@ -374,11 +387,7 @@ button:hover {
         height: 40px;
         font-size: 16px;
     }
-    
-    .instructions {
-        font-size: 0.8em;
-    }
-    
+
     button {
         padding: 8px 16px;
         font-size: 14px;

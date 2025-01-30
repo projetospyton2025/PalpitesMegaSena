@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 import random
+import os
 
 app = Flask(__name__)
 
@@ -69,5 +70,13 @@ def generate_games():
         'random_games': random_games
     })
 
+"""
 if __name__ == '__main__':
     app.run(debug=True)
+"""
+
+    # Configuração da porta
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 5000 como padrão
+    app.run(host="0.0.0.0", port=port)  # Inicia o servidor Flask na porta correta
+
