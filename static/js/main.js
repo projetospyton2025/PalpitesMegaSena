@@ -16,16 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Validate input and move to next field
+ // Validate input and move to next field
 function validateAndMove(event) {
     const input = event.target;
     const value = input.value;
     const index = parseInt(input.getAttribute('data-index'));
 
     // Remove leading zeros
-    if (value.startsWith('0')) {
-        input.value = parseInt(value);
-    }
+    //if (value.startsWith('0')) {
+    //    input.value = parseInt(value);
+    //}
 
     // Validate range
     if (value < 1 || value > 60) {
@@ -33,11 +33,10 @@ function validateAndMove(event) {
         return;
     }
 
-    // Check for duplicates
+    // Check for duplicates - Versão melhorada
     const allInputs = document.querySelectorAll('.number-input');
-    const isDuplicate = Array.from(allInputs)
-        .filter(i => i !== input)
-        .some(i => i.value === value);
+    const otherInputs = Array.from(allInputs).filter(i => i !== input);
+    const isDuplicate = otherInputs.some(i => i.value && parseInt(i.value) === parseInt(value));
 
     if (isDuplicate) {
         input.classList.add('error');
@@ -52,8 +51,8 @@ function validateAndMove(event) {
         nextInput.focus();
     }
 
-    // Check if all inputs are filled
-    if (areAllInputsFilled()) {
+    // Check if all inputs are filled and valid before generating games
+    if (areAllInputsFilled() && !document.querySelector('.number-input.error')) {
         generateGames();
     }
 }
@@ -140,19 +139,19 @@ function exportToTxt() {
 
     // Add original games
     content += 'JOGOS NORMAIS:\n';
-    addGamesToContent('original-games');
+    content = addGamesToContent(content, 'original-games');
 
     // Add +1 games
     content += '\nJOGOS +1:\n';
-    addGamesToContent('plus-one-games');
+    content = addGamesToContent(content, 'plus-one-games');
 
     // Add -1 games
     content += '\nJOGOS -1:\n';
-    addGamesToContent('minus-one-games');
+    content = addGamesToContent(content, 'minus-one-games');
 
     // Add random games
     content += '\nJOGOS ALEATÓRIOS:\n';
-    addGamesToContent('random-games');
+    content = addGamesToContent(content, 'random-games');
 
     // Create and trigger download
     downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
@@ -164,23 +163,23 @@ function exportToExcel() {
 
     // Add all game types
     content += 'Jogos Normais\n';
-    addGamesToContent('original-games', true);
+    content = addGamesToContent(content, 'original-games', true);
 
     content += '\nJogos +1\n';
-    addGamesToContent('plus-one-games', true);
+    content = addGamesToContent(content, 'plus-one-games', true);
 
     content += '\nJogos -1\n';
-    addGamesToContent('minus-one-games', true);
+    content = addGamesToContent(content, 'minus-one-games', true);
 
     content += '\nJogos Aleatórios\n';
-    addGamesToContent('random-games', true);
+    content = addGamesToContent(content, 'random-games', true);
 
     // Create and trigger download
     downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
 }
 
 // Helper function to add games to export content
-function addGamesToContent(containerId, isExcel = false) {
+function addGamesToContent(content, containerId, isExcel = false) {
     const container = document.getElementById(containerId);
     const gameCards = container.querySelectorAll('.game-card');
 
@@ -194,6 +193,8 @@ function addGamesToContent(containerId, isExcel = false) {
             content += numbers + '\n';
         }
     });
+    
+    return content;
 }
 
 // Helper function to download file
