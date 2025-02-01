@@ -105,6 +105,7 @@ def generate_games():
         'random_games': random_games
     })
 
+"""
 if __name__ == '__main__':
     app.run(debug=True)
 
@@ -113,4 +114,4 @@ if __name__ == '__main__':
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 5000 como padrão
     app.run(host="0.0.0.0", port=port)  # Inicia o servidor Flask na porta correta
-"""
+
