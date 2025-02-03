@@ -1,4 +1,3 @@
-
 /* Reset e configurações base */
 * {
     box-sizing: border-box;
@@ -34,47 +33,26 @@ h2{
 }
 
 .container, instrucaoes {
-    background-color: #f9f9f9; /* Fundo cinza claro */
-    border-radius: 12px; /* Bordas arredondadas */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
-    padding: 20px; /* Espaçamento interno */
-    text-align: left; /* Centraliza o texto */
-    font-family: Arial, sans-serif; /* Fonte padrão */
-    color: #333; /* Cor do texto */
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    color: #333;
     line-height: 35px;
 }
 
-/* Grade de inputs responsiva */
+/* Atualização: Grade de inputs responsiva fixada em 6x3 */
 .number-inputs {
     display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 8px;
     margin: 15px 0;
 }
 
-/* Responsividade da grade de inputs */
-@media (min-width: 320px) { /* Smartwatch/Small Mobile */
-    .number-inputs {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 375px) { /* Mobile */
-    .number-inputs {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 768px) { /* Tablet */
-    .number-inputs {
-        grid-template-columns: repeat(6, 1fr);
-    }
-}
-
-@media (min-width: 1024px) { /* Desktop/TV */
-    .number-inputs {
-        grid-template-columns: repeat(9, 1fr);
-    }
-}
+/* Removidas media queries que alteravam a estrutura da grid */
 
 /* Estilo dos inputs */
 .number-input {
@@ -99,78 +77,45 @@ h2{
     border-radius: 8px;
 }
 
-/* AQUI INICIO */
-/* Cores para diferentes tipos de jogos */
-/* Estilos para títulos dos cards */
-.game-title {
-    margin-bottom: 10px;
-    font-size: 1.1em;
+/* Estilos para diferentes tipos de jogos */
+.games-section:nth-of-type(1) {
+    background-color: #e6f3ff;
 }
-
-/* Cores específicas para títulos dos cards */
-.original-games-title {
+.games-section:nth-of-type(1) h3 {
+    color: #0066cc;
+}
+.games-section:nth-of-type(1) .game-numbers {
     color: #0066cc;
 }
 
-.plus-one-games-title {
+.games-section:nth-of-type(2) {
+    background-color: #e6ffe6;
+}
+.games-section:nth-of-type(2) h3 {
+    color: #008000;
+}
+.games-section:nth-of-type(2) .game-numbers {
     color: #008000;
 }
 
-.minus-one-games-title {
+.games-section:nth-of-type(3) {
+    background-color: #fff2e6;
+}
+.games-section:nth-of-type(3) h3 {
+    color: #cc6600;
+}
+.games-section:nth-of-type(3) .game-numbers {
     color: #cc6600;
 }
 
-.random-games-title {
-    color: #0066cc;
-}
-
-/* AQUI INICIO */
-
-
-
-/* Cores para diferentes tipos de jogos */
-/* Estilos para Jogos Normais */
-.games-section:nth-of-type(1) {
-    background-color: #e6f3ff; /* Azul claro para fundo */
-}
-.games-section:nth-of-type(1) h3 {
-    color: #0066cc; /* Azul escuro para título */
-}
-.games-section:nth-of-type(1) .game-numbers {
-    color: #0066cc; /* Azul escuro para números */
-}
-
-/* Estilos para Jogos +1 */
-.games-section:nth-of-type(2) {
-    background-color: #e6ffe6; /* Verde claro para fundo */
-}
-.games-section:nth-of-type(2) h3 {
-    color: #008000; /* Verde escuro para título */
-}
-.games-section:nth-of-type(2) .game-numbers {
-    color: #008000; /* Verde escuro para números */
-}
-
-/* Estilos para Jogos -1 */
-.games-section:nth-of-type(3) {
-    background-color: #fff2e6; /* Laranja claro para fundo */
-}
-.games-section:nth-of-type(3) h3 {
-    color: #cc6600; /* Laranja escuro para título */
-}
-.games-section:nth-of-type(3) .game-numbers {
-    color: #cc6600; /* Laranja escuro para números */
-}
-
-/* Estilos para Jogos Aleatórios */
 .games-section:nth-of-type(4) {
-    background-color: #e6f3ff; /* Azul claro para fundo */
+    background-color: #e6f3ff;
 }
 .games-section:nth-of-type(4) h3 {
-    color: #0066cc; /* Azul escuro para título */
+    color: #0066cc;
 }
 .games-section:nth-of-type(4) .game-numbers {
-    color: #0066cc; /* Azul escuro para números */
+    color: #0066cc;
 }
 
 /* Grid de jogos responsivo */
@@ -180,19 +125,13 @@ h2{
     margin: 15px 0;
 }
 
-@media (min-width: 320px) { /* Smartwatch/Small Mobile */
-    .games-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 768px) { /* Tablet */
+@media (min-width: 768px) {
     .games-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (min-width: 1024px) { /* Desktop/TV */
+@media (min-width: 1024px) {
     .games-grid {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -214,15 +153,6 @@ h2{
     color: #0066cc;
     padding: 10px;
     letter-spacing: 2px;
-}
-
-/* Cores diferentes para Jogos +1 e -1 */
-.games-section:nth-of-type(2) .game-numbers {
-    color: #008000; /* Verde para Jogos +1 */
-}
-
-.games-section:nth-of-type(3) .game-numbers {
-    color: #cc6600; /* Laranja para Jogos -1 */
 }
 
 /* Botões de exportação */
@@ -257,7 +187,7 @@ button:hover {
     margin: 5px 0;
 }
 
-/* Media Query para telas muito pequenas (smartwatch) */
+/* Media Query para telas muito pequenas */
 @media (max-width: 320px) {
     body {
         padding: 5px;
@@ -291,7 +221,7 @@ button:hover {
     }
 }
 
-/* Media Query para TV (telas muito grandes) */
+/* Media Query para telas muito grandes */
 @media (min-width: 1920px) {
     .container {
         max-width: 1800px;

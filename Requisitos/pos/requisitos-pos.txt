@@ -1,0 +1,760 @@
+
+Flask==3.1.0
+
+
+# blinker==1.9.0
+para este código preciso que:
+
+1 - seja mostrado os inputs assim 6 colunas e tres linhas
+2 - O jogos  normais deve ser os mesmo numeros inseridos nos imputs na ordem que forem inseridos
+ou seja os
+6 primeiros inputs jogo 1
+6 segundos inputs jogo 2
+6 ultimos inputs jogo 3
+
+exemplo apenas
+
+02 06 13 34 49 55 (jogo1)
+08 11 20 39 48 54 (jogo2)
+01 08 13 24 33 48 (jogo3)
+
+tambem preciso que os inputs ficam disponivel em 6 colunas or tres linhas... conforme figura anexo. 
+
+
+
+# click==8.1.8
+# colorama==0.4.6
+# Flask==3.1.0
+# itsdangerous==2.2.0
+# Jinja2==3.1.5
+# MarkupSafe==3.0.2
+# Werkzeug==3.1.3
+
+
+PS H:\Meu Drive\ProjetosPython\Loterias\Estratégias\PalpitesMegaSena> dir
+
+
+    Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estratégias\PalpitesMegaSena
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        01/02/2025     09:30                Requisitos
+d-----        30/01/2025     14:15                static
+d-----        30/01/2025     15:58                templates
+d-----        30/01/2025     17:59                venv
+------        30/01/2025     13:39           1096 LICENSE
+------        30/01/2025     13:39             18 README.md
+------        30/01/2025     14:27            932 PalpitesMegaSena.ps1
+------        30/01/2025     18:40            340 requirements.txt
+------        30/01/2025     15:45           2624 app.py
+
+
+from flask import Flask, render_template, jsonify, request
+import random
+import os
+
+app = Flask(__name__)
+
+def validate_numbers(numbers):
+    # Check if all numbers are within range and unique
+    numbers = [int(n) for n in numbers if n]
+    if len(numbers) != len(set(numbers)):
+        return False, "Números repetidos não são permitidos"
+    if any(n < 1 or n > 60 for n in numbers):
+        return False, "Números devem estar entre 01 e 60"
+    return True, ""
+
+def create_games(numbers):
+    # Sort numbers and split into groups of 6
+    numbers.sort()
+    return [numbers[i:i+6] for i in range(0, len(numbers), 6)]
+
+def modify_numbers(numbers, increment):
+    # Add or subtract 1 from each number, keeping within 1-60 range and avoiding duplicates
+    modified = []
+    used_numbers = set()
+    
+    for n in numbers:
+        new_n = n + increment
+        # Ajusta o número para estar dentro do intervalo 1-60
+        if new_n < 1:
+            new_n = 1
+        elif new_n > 60:
+            new_n = 60
+            
+        # Se o número já existe, tenta encontrar o próximo número disponível
+        while new_n in used_numbers:
+            if increment > 0:
+                new_n = new_n + 1 if new_n < 60 else 59
+            else:
+                new_n = new_n - 1 if new_n > 1 else 2
+                
+        used_numbers.add(new_n)
+        modified.append(new_n)
+    
+    return modified
+
+def create_random_combinations(plus_one_games, minus_one_games):
+    # Create 4 random games from the modified number sets
+    all_numbers = list(set(plus_one_games + minus_one_games))
+    
+    # Verifica se há números suficientes para criar 4 jogos únicos
+    if len(all_numbers) < 24:  # 4 jogos * 6 números
+        # Adiciona números sequenciais até ter números suficientes
+        current_num = 1
+        while len(all_numbers) < 24:
+            if current_num not in all_numbers and current_num <= 60:
+                all_numbers.append(current_num)
+            current_num += 1
+    
+    random_games = []
+    used_numbers = set()
+    
+    for _ in range(4):
+        # Filtra números disponíveis (não usados em outros jogos)
+        available_numbers = [n for n in all_numbers if n not in used_numbers]
+        
+        # Se não houver números suficientes, reseta os números usados
+        if len(available_numbers) < 6:
+            available_numbers = list(set(all_numbers) - set(used_numbers))
+        
+        # Gera um novo jogo com números únicos
+        game = sorted(random.sample(available_numbers, 6))
+        used_numbers.update(game)
+        random_games.append(game)
+    
+    return random_games
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/generate_games', methods=['POST'])
+def generate_games():
+    numbers = request.json.get('numbers', [])
+    
+    # Validate input
+    valid, message = validate_numbers(numbers)
+    if not valid:
+        return jsonify({'error': message}), 400
+    
+    # Create original games
+    original_games = create_games(numbers)
+    
+    # Create +1 and -1 variations
+    plus_one = create_games(modify_numbers(numbers, 1))
+    minus_one = create_games(modify_numbers(numbers, -1))
+    
+    # Create random combinations
+    random_games = create_random_combinations([n for game in plus_one for n in game],
+                                           [n for game in minus_one for n in game])
+    
+    return jsonify({
+        'original_games': original_games,
+        'plus_one_games': plus_one,
+        'minus_one_games': minus_one,
+        'random_games': random_games
+    })
+
+"""
+if __name__ == '__main__':
+    app.run(debug=True)
+
+"""
+    # Configuração da porta
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 5000 como padrão
+    app.run(host="0.0.0.0", port=port)  # Inicia o servidor Flask na porta correta
+
+// Create input fields
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.number-inputs');
+    for (let i = 0; i < 18; i++) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = 1;
+        input.max = 60;
+        input.className = 'number-input';
+        input.setAttribute('data-index', i);
+        container.appendChild(input);
+        
+        // Add event listeners
+        input.addEventListener('input', validateAndMove);
+        input.addEventListener('keydown', handleBackspace);
+    }
+});
+
+ // Validate input and move to next field
+function validateAndMove(event) {
+    const input = event.target;
+    const value = input.value;
+    const index = parseInt(input.getAttribute('data-index'));
+
+    // Remove leading zeros
+    //if (value.startsWith('0')) {
+    //    input.value = parseInt(value);
+    //}
+
+    // Validate range
+    if (value < 1 || value > 60) {
+        input.classList.add('error');
+        return;
+    }
+
+    // Check for duplicates - Versão melhorada
+    const allInputs = document.querySelectorAll('.number-input');
+    const otherInputs = Array.from(allInputs).filter(i => i !== input);
+    const isDuplicate = otherInputs.some(i => i.value && parseInt(i.value) === parseInt(value));
+
+    if (isDuplicate) {
+        input.classList.add('error');
+        return;
+    }
+
+    input.classList.remove('error');
+
+    // Move to next input if available
+    if (value.length === 2 && index < 17) {
+        const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
+        nextInput.focus();
+    }
+
+    // Check if all inputs are filled and valid before generating games
+    if (areAllInputsFilled() && !document.querySelector('.number-input.error')) {
+        generateGames();
+    }
+}
+
+// Handle backspace key
+function handleBackspace(event) {
+    if (event.key === 'Backspace' && !event.target.value) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        if (index > 0) {
+            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+            prevInput.focus();
+        }
+    }
+}
+
+// Check if all inputs are filled
+function areAllInputsFilled() {
+    const inputs = document.querySelectorAll('.number-input');
+    return Array.from(inputs).every(input => 
+        input.value && !input.classList.contains('error'));
+}
+
+// Generate games
+async function generateGames() {
+    const inputs = document.querySelectorAll('.number-input');
+    const numbers = Array.from(inputs).map(input => parseInt(input.value));
+
+    try {
+        const response = await fetch('/generate_games', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ numbers }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        displayGames(data);
+        document.querySelector('.results').style.display = 'block';
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Display games in the UI
+function displayGames(data) {
+    displayGameSet('original-games', data.original_games, 'Jogo');
+    displayGameSet('plus-one-games', data.plus_one_games, 'Jogo +1');
+    displayGameSet('minus-one-games', data.minus_one_games, 'Jogo -1');
+    displayGameSet('random-games', data.random_games, 'Jogo Aleatório');
+}
+
+// Display a set of games
+function displayGameSet(containerId, games, prefix) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    games.forEach((game, index) => {
+        const gameCard = document.createElement('div');
+        gameCard.className = 'game-card';
+
+        const title = document.createElement('h4');
+        // Adiciona uma classe específica baseada no tipo de jogo
+        title.className = `game-title ${containerId}-title`;
+        title.textContent = `${prefix} ${index + 1}`;
+
+        const numbers = document.createElement('div');
+        numbers.className = 'game-numbers';
+        numbers.textContent = game.map(n => n.toString().padStart(2, '0')).join(' ');
+
+        gameCard.appendChild(title);
+        gameCard.appendChild(numbers);
+        container.appendChild(gameCard);
+    });
+}
+
+// Export to TXT
+function exportToTxt() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    // Add original games
+    content += 'JOGOS NORMAIS:\n';
+    content = addGamesToContent(content, 'original-games');
+
+    // Add +1 games
+    content += '\nJOGOS +1:\n';
+    content = addGamesToContent(content, 'plus-one-games');
+
+    // Add -1 games
+    content += '\nJOGOS -1:\n';
+    content = addGamesToContent(content, 'minus-one-games');
+
+    // Add random games
+    content += '\nJOGOS ALEATÓRIOS:\n';
+    content = addGamesToContent(content, 'random-games');
+
+    // Create and trigger download
+    downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
+}
+
+// Export to Excel format (CSV)
+function exportToExcel() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    // Add all game types
+    content += 'Jogos Normais\n';
+    content = addGamesToContent(content, 'original-games', true);
+
+    content += '\nJogos +1\n';
+    content = addGamesToContent(content, 'plus-one-games', true);
+
+    content += '\nJogos -1\n';
+    content = addGamesToContent(content, 'minus-one-games', true);
+
+    content += '\nJogos Aleatórios\n';
+    content = addGamesToContent(content, 'random-games', true);
+
+    // Create and trigger download
+    downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
+}
+
+// Helper function to add games to export content
+function addGamesToContent(content, containerId, isExcel = false) {
+    const container = document.getElementById(containerId);
+    const gameCards = container.querySelectorAll('.game-card');
+
+    gameCards.forEach(card => {
+        const numbers = card.querySelector('.game-numbers').textContent;
+        if (isExcel) {
+            // Format for Excel: separate numbers with tabs
+            content += numbers.split(' ').join('\t') + '\n';
+        } else {
+            // Format for TXT: keep space-separated
+            content += numbers + '\n';
+        }
+    });
+    
+    return content;
+}
+
+// Helper function to download file
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: type });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palpites Mega Sena</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Palpites - Mega Sena</h1>
+        
+        <div class="instrucaoes">
+            <h1>Como usar:</h1>
+            <p>1. Digite 18 números únicos entre 01 e 60</p>
+            <p>2. Os números serão validados automaticamente.</p>
+            <p>3. Após preencher todos os números, serão geradas as combinações:</p>
+            <ul>
+                <li>Jogos Normais (seus números divididos em 3 jogos)</li>
+                <li>Jogos +1 (cada número aumentado em uma unidade)</li>
+                <li>Jogos -1 (cada número diminuído em uma unidade)</li>
+                <li>Jogos Aleatórios (4 jogos baseados nas variações)</li>
+            </ul>
+        </div>
+        <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
+
+        <div class="input-section">
+            <h1>Digite 18 números (01-60):</h1>
+            <div class="number-inputs"></div>
+        </div>
+
+        <div class="results" style="display: none;">
+            <h1>Seus Jogos</h1>
+            
+            <div class="games-section">
+                <h3>Jogos Normais</h3>
+                <div id="original-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: green;">+1</span></h3>
+                <div id="plus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
+                <div id="minus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos Aleatórios</h3>
+                <div id="random-games" class="games-grid"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button onclick="exportToTxt()">Exportar para TXT</button>
+                <button onclick="exportToExcel()">Exportar para Excel</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+/* Reset e configurações base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+/* Container principal com responsividade */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Títulos centralizados */
+h1, h2, h3, h4 {
+    text-align: center;
+    margin: 15px 0;
+}
+h2{
+    color:#ff0000;
+}
+
+.container, instrucaoes {
+    background-color: #f9f9f9; /* Fundo cinza claro */
+    border-radius: 12px; /* Bordas arredondadas */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
+    padding: 20px; /* Espaçamento interno */
+    text-align: left; /* Centraliza o texto */
+    font-family: Arial, sans-serif; /* Fonte padrão */
+    color: #333; /* Cor do texto */
+    line-height: 35px;
+}
+
+/* Grade de inputs responsiva */
+.number-inputs {
+    display: grid;
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Responsividade da grade de inputs */
+@media (min-width: 320px) { /* Smartwatch/Small Mobile */
+    .number-inputs {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 375px) { /* Mobile */
+    .number-inputs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 768px) { /* Tablet */
+    .number-inputs {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (min-width: 1024px) { /* Desktop/TV */
+    .number-inputs {
+        grid-template-columns: repeat(9, 1fr);
+    }
+}
+
+/* Estilo dos inputs */
+.number-input {
+    width: 100%;
+    height: 45px;
+    text-align: center;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.number-input.error {
+    border-color: #ff0000;
+    background-color: #ffe6e6;
+}
+
+/* Seções de jogos */
+.games-section {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* AQUI INICIO */
+/* Cores para diferentes tipos de jogos */
+/* Estilos para títulos dos cards */
+.game-title {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+/* Cores específicas para títulos dos cards */
+.original-games-title {
+    color: #0066cc;
+}
+
+.plus-one-games-title {
+    color: #008000;
+}
+
+.minus-one-games-title {
+    color: #cc6600;
+}
+
+.random-games-title {
+    color: #0066cc;
+}
+
+/* AQUI INICIO */
+
+
+
+/* Cores para diferentes tipos de jogos */
+/* Estilos para Jogos Normais */
+.games-section:nth-of-type(1) {
+    background-color: #e6f3ff; /* Azul claro para fundo */
+}
+.games-section:nth-of-type(1) h3 {
+    color: #0066cc; /* Azul escuro para título */
+}
+.games-section:nth-of-type(1) .game-numbers {
+    color: #0066cc; /* Azul escuro para números */
+}
+
+/* Estilos para Jogos +1 */
+.games-section:nth-of-type(2) {
+    background-color: #e6ffe6; /* Verde claro para fundo */
+}
+.games-section:nth-of-type(2) h3 {
+    color: #008000; /* Verde escuro para título */
+}
+.games-section:nth-of-type(2) .game-numbers {
+    color: #008000; /* Verde escuro para números */
+}
+
+/* Estilos para Jogos -1 */
+.games-section:nth-of-type(3) {
+    background-color: #fff2e6; /* Laranja claro para fundo */
+}
+.games-section:nth-of-type(3) h3 {
+    color: #cc6600; /* Laranja escuro para título */
+}
+.games-section:nth-of-type(3) .game-numbers {
+    color: #cc6600; /* Laranja escuro para números */
+}
+
+/* Estilos para Jogos Aleatórios */
+.games-section:nth-of-type(4) {
+    background-color: #e6f3ff; /* Azul claro para fundo */
+}
+.games-section:nth-of-type(4) h3 {
+    color: #0066cc; /* Azul escuro para título */
+}
+.games-section:nth-of-type(4) .game-numbers {
+    color: #0066cc; /* Azul escuro para números */
+}
+
+/* Grid de jogos responsivo */
+.games-grid {
+    display: grid;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+@media (min-width: 320px) { /* Smartwatch/Small Mobile */
+    .games-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 768px) { /* Tablet */
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) { /* Desktop/TV */
+    .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Cards dos jogos */
+.game-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Números dos jogos */
+.game-numbers {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #0066cc;
+    padding: 10px;
+    letter-spacing: 2px;
+}
+
+/* Cores diferentes para Jogos +1 e -1 */
+.games-section:nth-of-type(2) .game-numbers {
+    color: #008000; /* Verde para Jogos +1 */
+}
+
+.games-section:nth-of-type(3) .game-numbers {
+    color: #cc6600; /* Laranja para Jogos -1 */
+}
+
+/* Botões de exportação */
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0052a3;
+}
+
+/* Mensagens de erro */
+.error-message {
+    color: #ff0000;
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
+}
+
+/* Media Query para telas muito pequenas (smartwatch) */
+@media (max-width: 320px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    h2 {
+        font-size: 1.3em;
+    }
+    
+    h3 {
+        font-size: 1.1em;
+    }
+    
+    .number-input {
+        height: 40px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
+/* Media Query para TV (telas muito grandes) */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    body {
+        font-size: 18px;
+    }
+    
+    .number-input {
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .game-numbers {
+        font-size: 1.5em;
+    }
+    
+    button {
+        padding: 15px 30px;
+        font-size: 20px;
+    }
+}

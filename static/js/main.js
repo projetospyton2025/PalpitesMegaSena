@@ -16,46 +16,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
- // Validate input and move to next field
+// Função para validar input e mover para o próximo campo
 function validateAndMove(event) {
     const input = event.target;
     const value = input.value;
     const index = parseInt(input.getAttribute('data-index'));
-
-    // Remove leading zeros
-    //if (value.startsWith('0')) {
-    //    input.value = parseInt(value);
-    //}
-
-    // Validate range
+    
+    // Validar range (1-60)
     if (value < 1 || value > 60) {
         input.classList.add('error');
         return;
     }
 
-    // Check for duplicates - Versão melhorada
-    const allInputs = document.querySelectorAll('.number-input');
-    const otherInputs = Array.from(allInputs).filter(i => i !== input);
-    const isDuplicate = otherInputs.some(i => i.value && parseInt(i.value) === parseInt(value));
+    // Determinar em qual grupo de 6 números estamos (0, 1 ou 2)
+    const grupoAtual = Math.floor(index / 6);
+    const inicioGrupo = grupoAtual * 6;
+    const fimGrupo = inicioGrupo + 5;
 
-    if (isDuplicate) {
+    // Verificar duplicatas APENAS dentro do grupo atual
+    const inputsDoGrupo = document.querySelectorAll('.number-input');
+    const duplicadoNoGrupo = Array.from(inputsDoGrupo)
+        .slice(inicioGrupo, fimGrupo + 1)
+        .filter(i => i !== input)
+        .some(i => i.value && parseInt(i.value) === parseInt(value));
+
+    if (duplicadoNoGrupo) {
         input.classList.add('error');
         return;
     }
 
     input.classList.remove('error');
 
-    // Move to next input if available
+    // Mover para próximo input se disponível
     if (value.length === 2 && index < 17) {
         const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
         nextInput.focus();
     }
 
-    // Check if all inputs are filled and valid before generating games
-    if (areAllInputsFilled() && !document.querySelector('.number-input.error')) {
+    // Verificar se todos os inputs estão preenchidos e válidos antes de gerar
+    if (areAllInputsFilled()) {
         generateGames();
     }
 }
+
+
+
 
 // Handle backspace key
 function handleBackspace(event) {
@@ -68,7 +73,7 @@ function handleBackspace(event) {
     }
 }
 
-// Check if all inputs are filled
+// Função para verificar se todos os inputs estão preenchidos
 function areAllInputsFilled() {
     const inputs = document.querySelectorAll('.number-input');
     return Array.from(inputs).every(input => 
@@ -119,7 +124,6 @@ function displayGameSet(containerId, games, prefix) {
         gameCard.className = 'game-card';
 
         const title = document.createElement('h4');
-        // Adiciona uma classe específica baseada no tipo de jogo
         title.className = `game-title ${containerId}-title`;
         title.textContent = `${prefix} ${index + 1}`;
 
