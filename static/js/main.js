@@ -16,29 +16,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// Função para formatar número com zero à esquerda
+function formatNumber(num) {
+    return num.toString().padStart(2, '0');
+}
+
+
 // Função para validar input e mover para o próximo campo
 function validateAndMove(event) {
     const input = event.target;
-    const value = input.value;
+    const value = input.value.replace(/^0+/, ''); // Remove zeros à esquerda para validação
+    const numValue = parseInt(value);
     const index = parseInt(input.getAttribute('data-index'));
     
     // Validar range (1-60)
-    if (value < 1 || value > 60) {
+    if (numValue < 1 || numValue > 60) {
         input.classList.add('error');
         return;
     }
 
-    // Determinar em qual grupo de 6 números estamos (0, 1 ou 2)
-    const grupoAtual = Math.floor(index / 6);
-    const inicioGrupo = grupoAtual * 6;
-    const fimGrupo = inicioGrupo + 5;
+    // Determinar a linha atual (0, 1 ou 2)
+    const linha = Math.floor(index / 6);
+    const inicioLinha = linha * 6;
+    const fimLinha = inicioLinha + 5;
+    
+    // Pegar todos os inputs da linha atual
+    const inputsDaLinha = Array.from(document.querySelectorAll('.number-input'))
+        .slice(inicioLinha, fimLinha + 1);
+    
+    // Pegar números preenchidos na linha atual (excluindo o input atual)
+    const numerosPreenchidos = inputsDaLinha
+        .filter(inp => inp.value && inp !== input)
+        .map(inp => parseInt(inp.value))
+        .sort((a, b) => a - b);
+
+    // Verificar se o número mantém a ordem crescente
+    const menoresQueAtual = numerosPreenchidos.filter(n => n < numValue);
+    const maioresQueAtual = numerosPreenchidos.filter(n => n > numValue);
+    
+    if (menoresQueAtual.length > 0 && maioresQueAtual.length > 0) {
+        const maiorMenor = Math.max(...menoresQueAtual);
+        const menorMaior = Math.min(...maioresQueAtual);
+        
+        if (numValue <= maiorMenor || numValue >= menorMaior) {
+            input.classList.add('error');
+            return;
+        }
+    }
 
     // Verificar duplicatas APENAS dentro do grupo atual
-    const inputsDoGrupo = document.querySelectorAll('.number-input');
-    const duplicadoNoGrupo = Array.from(inputsDoGrupo)
-        .slice(inicioGrupo, fimGrupo + 1)
+    const duplicadoNoGrupo = inputsDaLinha
         .filter(i => i !== input)
-        .some(i => i.value && parseInt(i.value) === parseInt(value));
+        .some(i => i.value && parseInt(i.value) === numValue);
 
     if (duplicadoNoGrupo) {
         input.classList.add('error');
@@ -47,20 +76,59 @@ function validateAndMove(event) {
 
     input.classList.remove('error');
 
-    // Mover para próximo input se disponível
-    if (value.length === 2 && index < 17) {
+    // Formatar com zero à esquerda quando o input perde o foco
+    input.addEventListener('blur', function() {
+        if (this.value && !this.classList.contains('error')) {
+            this.value = this.value.padStart(2, '0');
+        }
+    });
+
+    // Mover para próximo input se tiver 2 dígitos
+    if (input.value.length === 2 && index < 17) {
         const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
-        nextInput.focus();
+        if (nextInput) nextInput.focus();
     }
 
-    // Verificar se todos os inputs estão preenchidos e válidos antes de gerar
+    // Verificar se todos os inputs estão preenchidos e válidos
     if (areAllInputsFilled()) {
         generateGames();
     }
 }
 
+// Função para verificar se todos os inputs estão preenchidos
+function areAllInputsFilled() {
+    const inputs = document.querySelectorAll('.number-input');
+    return Array.from(inputs).every(input => 
+        input.value && !input.classList.contains('error'));
+}
 
-
+// Função para lidar com a tecla backspace
+function handleBackspace(event) {
+    if (event.key === 'Backspace' && !event.target.value) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        if (index > 0) {
+            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+            prevInput.focus();
+        }
+    }
+}
+/*
+// Criar os campos de input
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.number-inputs');
+    for (let i = 0; i < 18; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 2;
+        input.className = 'number-input';
+        input.setAttribute('data-index', i);
+        container.appendChild(input);
+        
+        // Adicionar event listeners
+        input.addEventListener('input', validateAndMove);
+        input.addEventListener('keydown', handleBackspace);
+    }
+});*/
 
 // Handle backspace key
 function handleBackspace(event) {
