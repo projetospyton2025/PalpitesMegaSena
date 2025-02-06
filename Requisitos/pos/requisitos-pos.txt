@@ -1,31 +1,32 @@
 melhorias... descrever...
 
-Jogos Aleatórios (1,2,3 e 4) 
+--Jogos Aleatórios (1,2,3 e 4) 
 devem ser baseados exclusivamente nos 
 Jogos +1 1
 Jogos +1 2
 Jogos +1 3
 
-Já os jogos (5 e 6) 
+--Já os jogos (5 e 6) 
 devem ser baseados exclusivamente nos
 Jogos 1,2 e 3
 
-Adicionar 3 botões para download
+--Adicionar 3 botões para download
 *.html, *.txt e *.xlsx (sendo que cada dezena deve ficar em uma célula no excel)
 
 
+--Habilitar um input para o usuário inserir qualquer numero (desta que esteja dentro dos concursos já sorteados pela caixa)
+para inserir o numero do concurso e quando ele inserir o sistema confere e DESTACA os jogos... gerados... 
+
+--Independentemente do usuario inserir o numero ou não o sistema tbm deve conferir/destacar automaticamente o ultimo sorteio assim que a página for aberta/carregada
+
+--Use esta api (https://loteriascaixa-api.herokuapp.com/api/megasena/latest) USE APENAS PARA CONFERENIA E DESTACAR AS DEZENAS SORTEADAS.. 
+
+Em relação à conferência, trago um resumo do que preciso..
+Ao carregar a página o sistema verifica o ultimo sorteio e destaca as dezenas dos jogos sorteados.
+O usuario terá autonomia de verificar outros concursos inserindo o numero dele no input...onde apos a conferenia as dezenas serão destacadas..
 
 
-
-
-
-
-
-
-
-
-
-
+Então são 5 melhorias...
 
 
 Flask==3.1.0

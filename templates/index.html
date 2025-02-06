@@ -29,6 +29,15 @@
             <div class="number-inputs"></div>
         </div>
 
+        <!--dicione isto antes da div .results:-->
+        <div class="concurso-checker">
+            <input type="number" id="concurso-input" placeholder="Digite o número do concurso">
+            <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
+                Verificar Concurso
+            </button>
+        </div>
+
+
         <div class="results" style="display: none;">
             <h1>Seus Jogos</h1>
             
@@ -55,7 +64,13 @@
             <div class="export-buttons">
                 <button onclick="exportToTxt()">Exportar para TXT</button>
                 <button onclick="exportToExcel()">Exportar para Excel</button>
+                <!--Adicione isto na div .export-buttons:-->
+                <button onclick="exportToFormat('html')">Exportar HTML</button>
+                <button onclick="exportToFormat('txt')">Exportar TXT</button>
             </div>
+
+
+
         </div>
     </div>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

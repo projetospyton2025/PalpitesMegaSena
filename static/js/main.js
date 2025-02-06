@@ -149,6 +149,7 @@ function areAllInputsFilled() {
 }
 
 // Generate games
+// Modifique a função generateGames para incluir a verificação do último resultado
 async function generateGames() {
     const inputs = document.querySelectorAll('.number-input');
     const numbers = Array.from(inputs).map(input => parseInt(input.value));
@@ -169,6 +170,11 @@ async function generateGames() {
         const data = await response.json();
         displayGames(data);
         document.querySelector('.results').style.display = 'block';
+        
+        // Verifica o último resultado automaticamente
+        if (data.latest_result) {
+            highlightNumbers(data.latest_result.dezenas);
+        }
     } catch (error) {
         console.error('Error:', error);
     }
@@ -280,4 +286,84 @@ function downloadFile(content, filename, type) {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
+}
+
+// Adicione estas funções ao seu main.js
+
+// Função para verificar resultado específico
+async function checkConcurso(numero) {
+    try {
+        const response = await fetch(`/check_result/${numero}`);
+        const data = await response.json();
+        highlightNumbers(data.dezenas);
+    } catch (error) {
+        console.error('Erro ao verificar concurso:', error);
+    }
+}
+
+// Função para destacar números
+function highlightNumbers(dezenas) {
+    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
+        const numbers = gameDiv.textContent.split(' ');
+        const hasMatch = numbers.some(num => dezenas.includes(num));
+        if (hasMatch) {
+            gameDiv.classList.add('highlighted');
+        } else {
+            gameDiv.classList.remove('highlighted');
+        }
+    });
+}
+
+// Funções de exportação
+async function exportToFormat(format) {
+    const games = {
+        'Jogos Originais': getGamesFromContainer('original-games'),
+        'Jogos +1': getGamesFromContainer('plus-one-games'),
+        'Jogos -1': getGamesFromContainer('minus-one-games'),
+        'Jogos Aleatórios': getGamesFromContainer('random-games')
+    };
+
+    try {
+        const response = await fetch(`/export/${format}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(games)
+        });
+
+        const data = await response.json();
+        
+        if (format === 'xlsx') {
+            // Para XLSX, usamos uma biblioteca específica
+            const wb = XLSX.utils.book_new();
+            Object.entries(data.content).forEach(([sheetName, rows]) => {
+                const ws = XLSX.utils.json_to_sheet(rows);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            XLSX.writeFile(wb, data.filename);
+        } else {
+            // Para TXT e HTML
+            const blob = new Blob([data.content], { 
+                type: format === 'txt' ? 'text/plain' : 'text/html' 
+            });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    } catch (error) {
+        console.error('Erro na exportação:', error);
+    }
+}
+
+// Função auxiliar para pegar jogos de um container
+function getGamesFromContainer(containerId) {
+    const container = document.getElementById(containerId);
+    return Array.from(container.querySelectorAll('.game-numbers'))
+        .map(div => div.textContent.split(' ').map(Number));
 }
