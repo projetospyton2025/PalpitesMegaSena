@@ -160,6 +160,49 @@ h2{
 .export-buttons button:hover {
     opacity: 0.9;
 }
+/* Estilo para os números destacados */
+.number-highlight {
+    background-color: #ffeb3b;
+    padding: 2px 4px;
+    border-radius: 4px;
+    display: inline-block;
+    margin: -2px 0;
+    font-weight: bold;
+    color: #000;
+}
+/* Estilos para a seção de resultado do sorteio */
+.sorteio-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0 20px 0;
+    text-align: center;
+}
+
+.numeros-sorteados {
+    margin-top: 10px;
+}
+
+.dezenas {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.dezena {
+    background-color: #0066cc;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
+}
 
 @media (min-width: 768px) {
     .games-grid {

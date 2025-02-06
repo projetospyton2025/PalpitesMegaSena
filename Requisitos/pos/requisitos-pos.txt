@@ -1,35 +1,968 @@
-melhorias... descrever...
-
---Jogos Aleatórios (1,2,3 e 4) 
-devem ser baseados exclusivamente nos 
-Jogos +1 1
-Jogos +1 2
-Jogos +1 3
-
---Já os jogos (5 e 6) 
-devem ser baseados exclusivamente nos
-Jogos 1,2 e 3
-
---Adicionar 3 botões para download
-*.html, *.txt e *.xlsx (sendo que cada dezena deve ficar em uma célula no excel)
+Talvez eu nao tenha sido claro mas não é pra destacar o jogo inteiro 
+e sim apenas somente as dezenas do jogo que foram sorteados naquele concurso inserido no input pelo usuario
 
 
---Habilitar um input para o usuário inserir qualquer numero (desta que esteja dentro dos concursos já sorteados pela caixa)
-para inserir o numero do concurso e quando ele inserir o sistema confere e DESTACA os jogos... gerados... 
 
---Independentemente do usuario inserir o numero ou não o sistema tbm deve conferir/destacar automaticamente o ultimo sorteio assim que a página for aberta/carregada
+from flask import Flask, render_template, jsonify, request
+import random
+import os
+import requests
+import pandas as pd
+import openpyxl
+from datetime import datetime
 
---Use esta api (https://loteriascaixa-api.herokuapp.com/api/megasena/latest) USE APENAS PARA CONFERENIA E DESTACAR AS DEZENAS SORTEADAS.. 
+app = Flask(__name__)
 
-Em relação à conferência, trago um resumo do que preciso..
-Ao carregar a página o sistema verifica o ultimo sorteio e destaca as dezenas dos jogos sorteados.
-O usuario terá autonomia de verificar outros concursos inserindo o numero dele no input...onde apos a conferenia as dezenas serão destacadas..
+def validate_numbers(numbers):
+    """
+    Valida os números fornecidos pelo usuário
+    """
+    # Código existente de validação permanece o mesmo
+    numbers = [int(n) for n in numbers if n]
+    
+    if len(numbers) != 18:
+        return False, "É necessário preencher todos os 18 números"
+    
+    if any(n < 1 or n > 60 for n in numbers):
+        return False, "Todos os números devem estar entre 01 e 60"
+    
+    for i in range(0, len(numbers), 6):
+        grupo = numbers[i:i+6]
+        if len(grupo) != len(set(grupo)):
+            return False, f"Números repetidos encontrados no jogo {(i//6)+1}"
+    
+    return True, ""
+
+def create_games(numbers):
+    """
+    Cria os jogos mantendo a ordem original dos números
+    """
+    return [numbers[i:i+6] for i in range(0, len(numbers), 6)]
+
+def modify_numbers(numbers, increment):
+    """
+    Modifica cada número conforme as regras da Mega Sena
+    """
+    modified = []
+    for n in numbers:
+        if increment > 0:
+            new_n = min(n + 1, 60)
+        else:
+            new_n = max(n - 1, 1)
+        modified.append(new_n)
+    return modified
+
+def create_random_combinations_from_plus_one(plus_one_games):
+    """
+    Cria 4 jogos aleatórios baseados exclusivamente nos Jogos +1
+    """
+    # Pega todos os números únicos dos jogos +1
+    all_numbers = list(set([num for game in plus_one_games for num in game]))
+    random_games = []
+    
+    # Gera 4 jogos aleatórios (1,2,3,4)
+    for _ in range(4):
+        game = sorted(random.sample(all_numbers, 6))
+        random_games.append(game)
+    
+    return random_games
+
+def create_games_from_original(original_games):
+    """
+    Cria jogos 5 e 6 baseados exclusivamente nos jogos originais 1,2,3
+    """
+    # Pega todos os números únicos dos jogos originais
+    all_numbers = list(set([num for game in original_games for num in game]))
+    additional_games = []
+    
+    # Gera 2 jogos adicionais (5 e 6)
+    for _ in range(2):
+        game = sorted(random.sample(all_numbers, 6))
+        additional_games.append(game)
+    
+    return additional_games
+
+def get_latest_result():
+    """
+    Busca o último resultado da Mega Sena via API
+    """
+    try:
+        response = requests.get('https://loteriascaixa-api.herokuapp.com/api/megasena/latest')
+        return response.json()
+    except:
+        return None
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/generate_games', methods=['POST'])
+def generate_games():
+    numbers = request.json.get('numbers', [])
+    
+    valid, message = validate_numbers(numbers)
+    if not valid:
+        return jsonify({'error': message}), 400
+    
+    numbers = [int(n) for n in numbers if n]
+    
+    # Gera os jogos originais
+    original_games = create_games(numbers)
+    
+    # Gera os jogos +1 e -1
+    plus_one = create_games(modify_numbers(numbers, 1))
+    minus_one = create_games(modify_numbers(numbers, -1))
+    
+    # Gera os 4 primeiros jogos aleatórios baseados nos jogos +1
+    random_games = create_random_combinations_from_plus_one(plus_one)
+    
+    # Gera os jogos 5 e 6 baseados nos jogos originais
+    additional_games = create_games_from_original(original_games)
+    
+    # Combina todos os jogos aleatórios
+    random_games.extend(additional_games)
+    
+    # Busca o último resultado
+    latest_result = get_latest_result()
+    
+    return jsonify({
+        'original_games': original_games,
+        'plus_one_games': plus_one,
+        'minus_one_games': minus_one,
+        'random_games': random_games,
+        'latest_result': latest_result
+    })
+
+@app.route('/check_result/<int:concurso>', methods=['GET'])
+def check_result(concurso):
+    """
+    Busca o resultado de um concurso específico
+    """
+    try:
+        response = requests.get(f'https://loteriascaixa-api.herokuapp.com/api/megasena/{concurso}')
+        return jsonify(response.json())
+    except:
+        return jsonify({'error': 'Concurso não encontrado'}), 404
+
+@app.route('/export/<format>', methods=['POST'])
+def export_games(format):
+    """
+    Exporta os jogos nos formatos solicitados
+    """
+    games = request.json
+    
+    if format == 'txt':
+        content = "PALPITES MEGA SENA\n\n"
+        for game_type, game_list in games.items():
+            content += f"{game_type.upper()}\n"
+            for game in game_list:
+                content += " - ".join(str(num).zfill(2) for num in game) + "\n"
+            content += "\n"
+        
+        return jsonify({
+            'content': content,
+            'filename': 'palpites_mega_sena.txt'
+        })
+    
+    elif format == 'html':
+        html_content = """
+        <html>
+        <head>
+            <title>Palpites Mega Sena</title>
+            <style>
+                body { font-family: Arial; }
+                .game { margin: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>Palpites Mega Sena</h1>
+        """
+        
+        for game_type, game_list in games.items():
+            html_content += f"<h2>{game_type}</h2>"
+            for game in game_list:
+                numbers = " - ".join(str(num).zfill(2) for num in game)
+                html_content += f'<div class="game">{numbers}</div>'
+        
+        html_content += "</body></html>"
+        
+        return jsonify({
+            'content': html_content,
+            'filename': 'palpites_mega_sena.html'
+        })
+    
+    elif format == 'xlsx':
+        # Cria um DataFrame para cada tipo de jogo
+        dfs = {}
+        for game_type, game_list in games.items():
+            df = pd.DataFrame(game_list)
+            df.columns = [f'Dezena {i+1}' for i in range(6)]
+            dfs[game_type] = df
+        
+        return jsonify({
+            'content': {sheet: df.to_dict('records') for sheet, df in dfs.items()},
+            'filename': 'palpites_mega_sena.xlsx'
+        })
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
+	
+	// Create input fields
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.number-inputs');
+    for (let i = 0; i < 18; i++) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = 1;
+        input.max = 60;
+        input.className = 'number-input';
+        input.setAttribute('data-index', i);
+        container.appendChild(input);
+        
+        // Add event listeners
+        input.addEventListener('input', validateAndMove);
+        input.addEventListener('keydown', handleBackspace);
+    }
+});
+
+// Função para formatar número com zero à esquerda
+function formatNumber(num) {
+    return num.toString().padStart(2, '0');
+}
 
 
-Então são 5 melhorias...
+// Função para validar input e mover para o próximo campo
+function validateAndMove(event) {
+    const input = event.target;
+    const value = input.value.replace(/^0+/, ''); // Remove zeros à esquerda para validação
+    const numValue = parseInt(value);
+    const index = parseInt(input.getAttribute('data-index'));
+    
+    // Validar range (1-60)
+    if (numValue < 1 || numValue > 60) {
+        input.classList.add('error');
+        return;
+    }
+
+    // Determinar a linha atual (0, 1 ou 2)
+    const linha = Math.floor(index / 6);
+    const inicioLinha = linha * 6;
+    const fimLinha = inicioLinha + 5;
+    
+    // Pegar todos os inputs da linha atual
+    const inputsDaLinha = Array.from(document.querySelectorAll('.number-input'))
+        .slice(inicioLinha, fimLinha + 1);
+    
+    // Pegar números preenchidos na linha atual (excluindo o input atual)
+    const numerosPreenchidos = inputsDaLinha
+        .filter(inp => inp.value && inp !== input)
+        .map(inp => parseInt(inp.value))
+        .sort((a, b) => a - b);
+
+    // Verificar se o número mantém a ordem crescente
+    const menoresQueAtual = numerosPreenchidos.filter(n => n < numValue);
+    const maioresQueAtual = numerosPreenchidos.filter(n => n > numValue);
+    
+    if (menoresQueAtual.length > 0 && maioresQueAtual.length > 0) {
+        const maiorMenor = Math.max(...menoresQueAtual);
+        const menorMaior = Math.min(...maioresQueAtual);
+        
+        if (numValue <= maiorMenor || numValue >= menorMaior) {
+            input.classList.add('error');
+            return;
+        }
+    }
+
+    // Verificar duplicatas APENAS dentro do grupo atual
+    const duplicadoNoGrupo = inputsDaLinha
+        .filter(i => i !== input)
+        .some(i => i.value && parseInt(i.value) === numValue);
+
+    if (duplicadoNoGrupo) {
+        input.classList.add('error');
+        return;
+    }
+
+    input.classList.remove('error');
+
+    // Formatar com zero à esquerda quando o input perde o foco
+    input.addEventListener('blur', function() {
+        if (this.value && !this.classList.contains('error')) {
+            this.value = this.value.padStart(2, '0');
+        }
+    });
+
+    // Mover para próximo input se tiver 2 dígitos
+    if (input.value.length === 2 && index < 17) {
+        const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
+        if (nextInput) nextInput.focus();
+    }
+
+    // Verificar se todos os inputs estão preenchidos e válidos
+    if (areAllInputsFilled()) {
+        generateGames();
+    }
+}
+
+// Função para verificar se todos os inputs estão preenchidos
+function areAllInputsFilled() {
+    const inputs = document.querySelectorAll('.number-input');
+    return Array.from(inputs).every(input => 
+        input.value && !input.classList.contains('error'));
+}
+
+// Função para lidar com a tecla backspace
+function handleBackspace(event) {
+    if (event.key === 'Backspace' && !event.target.value) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        if (index > 0) {
+            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+            prevInput.focus();
+        }
+    }
+}
+/*
+// Criar os campos de input
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.number-inputs');
+    for (let i = 0; i < 18; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 2;
+        input.className = 'number-input';
+        input.setAttribute('data-index', i);
+        container.appendChild(input);
+        
+        // Adicionar event listeners
+        input.addEventListener('input', validateAndMove);
+        input.addEventListener('keydown', handleBackspace);
+    }
+});*/
+
+// Handle backspace key
+function handleBackspace(event) {
+    if (event.key === 'Backspace' && !event.target.value) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        if (index > 0) {
+            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+            prevInput.focus();
+        }
+    }
+}
+
+// Função para verificar se todos os inputs estão preenchidos
+function areAllInputsFilled() {
+    const inputs = document.querySelectorAll('.number-input');
+    return Array.from(inputs).every(input => 
+        input.value && !input.classList.contains('error'));
+}
+
+// Generate games
+// Modifique a função generateGames para incluir a verificação do último resultado
+async function generateGames() {
+    const inputs = document.querySelectorAll('.number-input');
+    const numbers = Array.from(inputs).map(input => parseInt(input.value));
+
+    try {
+        const response = await fetch('/generate_games', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ numbers }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        displayGames(data);
+        document.querySelector('.results').style.display = 'block';
+        
+        // Verifica o último resultado automaticamente
+        if (data.latest_result) {
+            highlightNumbers(data.latest_result.dezenas);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Display games in the UI
+function displayGames(data) {
+    displayGameSet('original-games', data.original_games, 'Jogo');
+    displayGameSet('plus-one-games', data.plus_one_games, 'Jogo +1');
+    displayGameSet('minus-one-games', data.minus_one_games, 'Jogo -1');
+    displayGameSet('random-games', data.random_games, 'Jogo Aleatório');
+}
+
+// Display a set of games
+function displayGameSet(containerId, games, prefix) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    games.forEach((game, index) => {
+        const gameCard = document.createElement('div');
+        gameCard.className = 'game-card';
+
+        const title = document.createElement('h4');
+        title.className = `game-title ${containerId}-title`;
+        title.textContent = `${prefix} ${index + 1}`;
+
+        const numbers = document.createElement('div');
+        numbers.className = 'game-numbers';
+        numbers.textContent = game.map(n => n.toString().padStart(2, '0')).join(' ');
+
+        gameCard.appendChild(title);
+        gameCard.appendChild(numbers);
+        container.appendChild(gameCard);
+    });
+}
+
+// Export to TXT
+function exportToTxt() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    // Add original games
+    content += 'JOGOS NORMAIS:\n';
+    content = addGamesToContent(content, 'original-games');
+
+    // Add +1 games
+    content += '\nJOGOS +1:\n';
+    content = addGamesToContent(content, 'plus-one-games');
+
+    // Add -1 games
+    content += '\nJOGOS -1:\n';
+    content = addGamesToContent(content, 'minus-one-games');
+
+    // Add random games
+    content += '\nJOGOS ALEATÓRIOS:\n';
+    content = addGamesToContent(content, 'random-games');
+
+    // Create and trigger download
+    downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
+}
+
+// Export to Excel format (CSV)
+function exportToExcel() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    // Add all game types
+    content += 'Jogos Normais\n';
+    content = addGamesToContent(content, 'original-games', true);
+
+    content += '\nJogos +1\n';
+    content = addGamesToContent(content, 'plus-one-games', true);
+
+    content += '\nJogos -1\n';
+    content = addGamesToContent(content, 'minus-one-games', true);
+
+    content += '\nJogos Aleatórios\n';
+    content = addGamesToContent(content, 'random-games', true);
+
+    // Create and trigger download
+    downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
+}
+
+// Helper function to add games to export content
+function addGamesToContent(content, containerId, isExcel = false) {
+    const container = document.getElementById(containerId);
+    const gameCards = container.querySelectorAll('.game-card');
+
+    gameCards.forEach(card => {
+        const numbers = card.querySelector('.game-numbers').textContent;
+        if (isExcel) {
+            // Format for Excel: separate numbers with tabs
+            content += numbers.split(' ').join('\t') + '\n';
+        } else {
+            // Format for TXT: keep space-separated
+            content += numbers + '\n';
+        }
+    });
+    
+    return content;
+}
+
+// Helper function to download file
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: type });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Adicione estas funções ao seu main.js
+
+// Função para verificar resultado específico
+async function checkConcurso(numero) {
+    try {
+        const response = await fetch(`/check_result/${numero}`);
+        const data = await response.json();
+        highlightNumbers(data.dezenas);
+    } catch (error) {
+        console.error('Erro ao verificar concurso:', error);
+    }
+}
+
+// Função para destacar números
+function highlightNumbers(dezenas) {
+    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
+        const numbers = gameDiv.textContent.split(' ');
+        const hasMatch = numbers.some(num => dezenas.includes(num));
+        if (hasMatch) {
+            gameDiv.classList.add('highlighted');
+        } else {
+            gameDiv.classList.remove('highlighted');
+        }
+    });
+}
+
+// Funções de exportação
+async function exportToFormat(format) {
+    const games = {
+        'Jogos Originais': getGamesFromContainer('original-games'),
+        'Jogos +1': getGamesFromContainer('plus-one-games'),
+        'Jogos -1': getGamesFromContainer('minus-one-games'),
+        'Jogos Aleatórios': getGamesFromContainer('random-games')
+    };
+
+    try {
+        const response = await fetch(`/export/${format}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(games)
+        });
+
+        const data = await response.json();
+        
+        if (format === 'xlsx') {
+            // Para XLSX, usamos uma biblioteca específica
+            const wb = XLSX.utils.book_new();
+            Object.entries(data.content).forEach(([sheetName, rows]) => {
+                const ws = XLSX.utils.json_to_sheet(rows);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            });
+            XLSX.writeFile(wb, data.filename);
+        } else {
+            // Para TXT e HTML
+            const blob = new Blob([data.content], { 
+                type: format === 'txt' ? 'text/plain' : 'text/html' 
+            });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    } catch (error) {
+        console.error('Erro na exportação:', error);
+    }
+}
+
+// Função auxiliar para pegar jogos de um container
+function getGamesFromContainer(containerId) {
+    const container = document.getElementById(containerId);
+    return Array.from(container.querySelectorAll('.game-numbers'))
+        .map(div => div.textContent.split(' ').map(Number));
+}
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palpites Mega Sena</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Palpites - Mega Sena</h1>
+        
+        <div class="instrucaoes">
+            <h1>Como usar:</h1>
+            <p>1. Digite 18 números únicos entre 01 e 60</p>
+            <p>2. Os números serão validados automaticamente.</p>
+            <p>3. Após preencher todos os números, serão geradas as combinações:</p>
+            <ul>
+                <li>Jogos Normais (seus números divididos em 3 jogos)</li>
+                <li>Jogos +1 (cada número aumentado em uma unidade)</li>
+                <li>Jogos -1 (cada número diminuído em uma unidade)</li>
+                <li>Jogos Aleatórios (4 jogos baseados nas variações)</li>
+            </ul>
+        </div>
+        <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
+
+        <div class="input-section">
+            <h1>Digite 18 números <small>(01-60)</small>:</h1>
+            <div class="number-inputs"></div>
+        </div>
+
+        <!--dicione isto antes da div .results:-->
+        <div class="concurso-checker">
+            <input type="number" id="concurso-input" placeholder="Concurso">
+            <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
+                Verificar Concurso
+            </button>
+        </div>
+
+
+        <div class="results" style="display: none;">
+            <h1>Seus Jogos</h1>
+            
+            <div class="games-section">
+                <h3>Jogos Normais</h3>
+                <div id="original-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: green;">+1</span></h3>
+                <div id="plus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
+                <div id="minus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos Aleatórios</h3>
+                <div id="random-games" class="games-grid"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button onclick="exportToTxt()">Exportar para TXT</button>
+                <button onclick="exportToExcel()">Exportar para Excel</button>
+                <!--Adicione isto na div .export-buttons:-->
+                <button onclick="exportToFormat('html')">Exportar HTML</button>
+                <button onclick="exportToFormat('txt')">Exportar TXT</button>
+            </div>
+
+
+
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+/* Reset e configurações base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+/* Container principal com responsividade */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Títulos centralizados */
+h1, h2, h3, h4 {
+    text-align: center;
+    margin: 15px 0;
+}
+h2{
+    color:#ff0000;
+}
+
+.container, instrucaoes {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    color: #333;
+    line-height: 35px;
+}
+
+/* Atualização: Grade de inputs responsiva fixada em 6x3 */
+.number-inputs {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    margin: 15px 0;
+}
+
+/* Removidas media queries que alteravam a estrutura da grid */
+
+/* Estilo dos inputs */
+.number-input {
+    width: 100%;
+    height: 45px;
+    text-align: center;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.number-input.error {
+    border-color: #ff0000;
+    background-color: #ffe6e6;
+}
+
+/* Seções de jogos */
+.games-section {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+/* Estilos para diferentes tipos de jogos */
+.games-section:nth-of-type(1) {
+    background-color: #e6f3ff;
+}
+.games-section:nth-of-type(1) h3 {
+    color: #0066cc;
+}
+.games-section:nth-of-type(1) .game-numbers {
+    color: #0066cc;
+}
+
+.games-section:nth-of-type(2) {
+    background-color: #e6ffe6;
+}
+.games-section:nth-of-type(2) h3 {
+    color: #008000;
+}
+.games-section:nth-of-type(2) .game-numbers {
+    color: #008000;
+}
+
+.games-section:nth-of-type(3) {
+    background-color: #fff2e6;
+}
+.games-section:nth-of-type(3) h3 {
+    color: #cc6600;
+}
+.games-section:nth-of-type(3) .game-numbers {
+    color: #cc6600;
+}
+
+.games-section:nth-of-type(4) {
+    background-color: #e6f3ff;
+}
+.games-section:nth-of-type(4) h3 {
+    color: #0066cc;
+}
+.games-section:nth-of-type(4) .game-numbers {
+    color: #0066cc;
+}
+
+/* Grid de jogos responsivo */
+.games-grid {
+    display: grid;
+    gap: 15px;
+    margin: 15px 0;
+}
+/* Adicione estes estilos ao seu CSS existente */
+
+.concurso-checker {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.concurso-checker input {
+    padding: 8px;
+    margin-right: 10px;
+    width: 150px;
+}
+
+.highlighted {
+    background-color: #ffeb3b;
+    transition: background-color 0.3s ease;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.export-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.export-buttons button:hover {
+    opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .games-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Cards dos jogos */
+.game-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Números dos jogos */
+.game-numbers {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #0066cc;
+    padding: 10px;
+    letter-spacing: 2px;
+}
+
+/* Botões de exportação */
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0052a3;
+}
+
+/* Mensagens de erro */
+.error-message {
+    color: #ff0000;
+    font-size: 14px;
+    text-align: center;
+    margin: 5px 0;
+}
+
+/* Media Query para telas muito pequenas */
+@media (max-width: 320px) {
+    body {
+        padding: 5px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.5em;
+    }
+    
+    h2 {
+        font-size: 1.3em;
+    }
+    
+    h3 {
+        font-size: 1.1em;
+    }
+    
+    .number-input {
+        height: 40px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 14px;
+        width: 100%;
+    }
+}
+
+/* Media Query para telas muito grandes */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+    }
+    
+    body {
+        font-size: 18px;
+    }
+    
+    .number-input {
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .game-numbers {
+        font-size: 1.5em;
+    }
+    
+    button {
+        padding: 15px 30px;
+        font-size: 20px;
+    }
+}
+
+
 
 
 Flask==3.1.0
+requests==2.32.3
+pandas==2.2.3
+openpyxl==3.1.5
+
+#blinker==1.9.0
+#cffi==1.17.0
+#click==8.1.8
+#colorama==0.4.6
+#greenlet==0.4.13
+#hpy==0.9.0
+#itsdangerous==2.2.0
+#Jinja2==3.1.5
+#MarkupSafe==3.0.2
+#readline==6.2.4.1
+#Werkzeug==3.1.3
+
+#pip install requests pandas openpyxl
+
 
 
 # blinker==1.9.0
@@ -40,6 +973,7 @@ Flask==3.1.0
 # Jinja2==3.1.5
 # MarkupSafe==3.0.2
 # Werkzeug==3.1.3
+
 
 (venv-pypy) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena>
 

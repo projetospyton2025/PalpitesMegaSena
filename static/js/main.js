@@ -295,25 +295,41 @@ async function checkConcurso(numero) {
     try {
         const response = await fetch(`/check_result/${numero}`);
         const data = await response.json();
-        highlightNumbers(data.dezenas);
+        if (data && data.dezenas) {
+            // Converte as dezenas para números
+            const dezenasSorteadas = data.dezenas.map(Number);
+            highlightNumbers(dezenasSorteadas);
+        }
     } catch (error) {
         console.error('Erro ao verificar concurso:', error);
     }
 }
-
 // Função para destacar números
-function highlightNumbers(dezenas) {
+// Função para destacar apenas os números sorteados
+function highlightNumbers(dezenasSorteadas) {
+    // Remove todos os destaques anteriores
+    document.querySelectorAll('.number-highlight').forEach(span => {
+        const text = span.textContent;
+        span.replaceWith(text);
+    });
+
+    // Procura os números em todos os jogos
     document.querySelectorAll('.game-numbers').forEach(gameDiv => {
-        const numbers = gameDiv.textContent.split(' ');
-        const hasMatch = numbers.some(num => dezenas.includes(num));
-        if (hasMatch) {
-            gameDiv.classList.add('highlighted');
-        } else {
-            gameDiv.classList.remove('highlighted');
-        }
+        const numbersText = gameDiv.textContent;
+        const numbers = numbersText.split(' ');
+        
+        // Cria o novo conteúdo com os números destacados
+        const newContent = numbers.map(num => {
+            const number = parseInt(num);
+            if (dezenasSorteadas.includes(number)) {
+                return `<span class="number-highlight">${num}</span>`;
+            }
+            return num;
+        }).join(' ');
+        
+        gameDiv.innerHTML = newContent;
     });
 }
-
 // Funções de exportação
 async function exportToFormat(format) {
     const games = {
