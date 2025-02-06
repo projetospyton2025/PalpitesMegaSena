@@ -1,5 +1,19 @@
 melhorias... descrever...
 
+Jogos Aleatórios (1,2,3 e 4) 
+devem ser baseados exclusivamente nos 
+Jogos +1 1
+Jogos +1 2
+Jogos +1 3
+
+Já os jogos (5 e 6) 
+devem ser baseados exclusivamente nos
+Jogos 1,2 e 3
+
+Adicionar 3 botões para download
+*.html, *.txt e *.xlsx (sendo que cada dezena deve ficar em uma célula no excel)
+
+
 
 
 
