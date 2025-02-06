@@ -1,27 +1,23 @@
+melhorias... descrever...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Flask==3.1.0
 
 
 # blinker==1.9.0
-para este código preciso que:
-
-1 - seja mostrado os inputs assim 6 colunas e tres linhas
-2 - O jogos  normais deve ser os mesmo numeros inseridos nos imputs na ordem que forem inseridos
-ou seja os
-6 primeiros inputs jogo 1
-6 segundos inputs jogo 2
-6 ultimos inputs jogo 3
-
-exemplo apenas
-
-02 06 13 34 49 55 (jogo1)
-08 11 20 39 48 54 (jogo2)
-01 08 13 24 33 48 (jogo3)
-
-tambem preciso que os inputs ficam disponivel em 6 colunas or tres linhas... conforme figura anexo. 
-
-
-
 # click==8.1.8
 # colorama==0.4.6
 # Flask==3.1.0
@@ -30,78 +26,105 @@ tambem preciso que os inputs ficam disponivel em 6 colunas or tres linhas... con
 # MarkupSafe==3.0.2
 # Werkzeug==3.1.3
 
+(venv-pypy) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena>
 
-PS H:\Meu Drive\ProjetosPython\Loterias\Estratégias\PalpitesMegaSena> dir
+(venv-python) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena> dir
 
 
-    Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estratégias\PalpitesMegaSena
+    Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
 
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d-----        01/02/2025     09:30                Requisitos
-d-----        30/01/2025     14:15                static
-d-----        30/01/2025     15:58                templates
-d-----        30/01/2025     17:59                venv
-------        30/01/2025     13:39           1096 LICENSE
-------        30/01/2025     13:39             18 README.md
-------        30/01/2025     14:27            932 PalpitesMegaSena.ps1
-------        30/01/2025     18:40            340 requirements.txt
-------        30/01/2025     15:45           2624 app.py
+d-----        05/02/2025     19:48                Requisitos
+d-----        05/02/2025     19:48                static
+d-----        05/02/2025     19:48                templates
+d-----        05/02/2025     19:54                venv-python
+d-----        05/02/2025     19:54                venv-pypy
+------        05/02/2025     19:48           1096 LICENSE
+------        05/02/2025     19:48            932 PalpitesMegaSena.ps1
+------        05/02/2025     19:48             18 README.md
+------        05/02/2025     19:48           3991 app.py
+------        05/02/2025     20:14           1072 requirements.txt
+------        05/02/2025     20:14            394 requirements-pypy.txt
+------        05/02/2025     20:14            268 requirements-cpython.txt
 
 
-from flask import Flask, render_template, jsonify, request
+(venv-python) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena> python app.py
+ * Serving Flask app 'app'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:10000
+ * Running on http://10.0.0.127:10000
+ 
+ from flask import Flask, render_template, jsonify, request
 import random
 import os
 
 app = Flask(__name__)
 
 def validate_numbers(numbers):
-    # Check if all numbers are within range and unique
+    """
+    Valida os números fornecidos pelo usuário
+    """
+    # Converter todos os números para inteiros
     numbers = [int(n) for n in numbers if n]
-    if len(numbers) != len(set(numbers)):
-        return False, "Números repetidos não são permitidos"
+    
+    # Verificar se temos exatamente 18 números
+    if len(numbers) != 18:
+        return False, "É necessário preencher todos os 18 números"
+    
+    # Verificar se todos os números estão entre 1 e 60
     if any(n < 1 or n > 60 for n in numbers):
-        return False, "Números devem estar entre 01 e 60"
+        return False, "Todos os números devem estar entre 01 e 60"
+    
+    # Verificar duplicatas dentro de cada grupo de 6 números
+    for i in range(0, len(numbers), 6):
+        grupo = numbers[i:i+6]
+        if len(grupo) != len(set(grupo)):
+            return False, f"Números repetidos encontrados no jogo {(i//6)+1}"
+    
     return True, ""
 
 def create_games(numbers):
-    # Sort numbers and split into groups of 6
-    numbers.sort()
+    """
+    Cria os jogos mantendo a ordem original dos números
+    """
     return [numbers[i:i+6] for i in range(0, len(numbers), 6)]
 
 def modify_numbers(numbers, increment):
-    # Add or subtract 1 from each number, keeping within 1-60 range and avoiding duplicates
+    """
+    Modifica cada número conforme as regras da Mega Sena
+    """
     modified = []
-    used_numbers = set()
     
     for n in numbers:
-        new_n = n + increment
-        # Ajusta o número para estar dentro do intervalo 1-60
-        if new_n < 1:
-            new_n = 1
-        elif new_n > 60:
-            new_n = 60
-            
-        # Se o número já existe, tenta encontrar o próximo número disponível
-        while new_n in used_numbers:
-            if increment > 0:
-                new_n = new_n + 1 if new_n < 60 else 59
+        if increment > 0:
+            # Somando 1
+            if n < 60:
+                new_n = n + 1
             else:
-                new_n = new_n - 1 if new_n > 1 else 2
-                
-        used_numbers.add(new_n)
+                new_n = 60
+        else:
+            # Subtraindo 1
+            if n == 1:
+                new_n = 1  # Mantém 1 pois não existe 0
+            else:
+                new_n = n - 1
+        
         modified.append(new_n)
     
     return modified
 
 def create_random_combinations(plus_one_games, minus_one_games):
-    # Create 4 random games from the modified number sets
+    """
+    Cria 4 jogos aleatórios com base nas listas modificadas
+    """
     all_numbers = list(set(plus_one_games + minus_one_games))
     
     # Verifica se há números suficientes para criar 4 jogos únicos
     if len(all_numbers) < 24:  # 4 jogos * 6 números
-        # Adiciona números sequenciais até ter números suficientes
         current_num = 1
         while len(all_numbers) < 24:
             if current_num not in all_numbers and current_num <= 60:
@@ -112,14 +135,11 @@ def create_random_combinations(plus_one_games, minus_one_games):
     used_numbers = set()
     
     for _ in range(4):
-        # Filtra números disponíveis (não usados em outros jogos)
         available_numbers = [n for n in all_numbers if n not in used_numbers]
         
-        # Se não houver números suficientes, reseta os números usados
         if len(available_numbers) < 6:
             available_numbers = list(set(all_numbers) - set(used_numbers))
         
-        # Gera um novo jogo com números únicos
         game = sorted(random.sample(available_numbers, 6))
         used_numbers.update(game)
         random_games.append(game)
@@ -134,21 +154,22 @@ def index():
 def generate_games():
     numbers = request.json.get('numbers', [])
     
-    # Validate input
+    # Validação dos números
     valid, message = validate_numbers(numbers)
     if not valid:
         return jsonify({'error': message}), 400
     
-    # Create original games
-    original_games = create_games(numbers)
+    # Convertendo strings para inteiros
+    numbers = [int(n) for n in numbers if n]
     
-    # Create +1 and -1 variations
+    # Criando jogos
+    original_games = create_games(numbers)
     plus_one = create_games(modify_numbers(numbers, 1))
     minus_one = create_games(modify_numbers(numbers, -1))
     
-    # Create random combinations
+    # Criando combinações aleatórias
     random_games = create_random_combinations([n for game in plus_one for n in game],
-                                           [n for game in minus_one for n in game])
+                                              [n for game in minus_one for n in game])
     
     return jsonify({
         'original_games': original_games,
@@ -157,17 +178,12 @@ def generate_games():
         'random_games': random_games
     })
 
-"""
+# Configuração da porta para execução
 if __name__ == '__main__':
-    app.run(debug=True)
-
-"""
-    # Configuração da porta
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 5000 como padrão
+    port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 10000 como padrão
     app.run(host="0.0.0.0", port=port)  # Inicia o servidor Flask na porta correta
 
-// Create input fields
+ // Create input fields
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.number-inputs');
     for (let i = 0; i < 18; i++) {
@@ -185,46 +201,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
- // Validate input and move to next field
+// Função para formatar número com zero à esquerda
+function formatNumber(num) {
+    return num.toString().padStart(2, '0');
+}
+
+
+// Função para validar input e mover para o próximo campo
 function validateAndMove(event) {
     const input = event.target;
-    const value = input.value;
+    const value = input.value.replace(/^0+/, ''); // Remove zeros à esquerda para validação
+    const numValue = parseInt(value);
     const index = parseInt(input.getAttribute('data-index'));
-
-    // Remove leading zeros
-    //if (value.startsWith('0')) {
-    //    input.value = parseInt(value);
-    //}
-
-    // Validate range
-    if (value < 1 || value > 60) {
+    
+    // Validar range (1-60)
+    if (numValue < 1 || numValue > 60) {
         input.classList.add('error');
         return;
     }
 
-    // Check for duplicates - Versão melhorada
-    const allInputs = document.querySelectorAll('.number-input');
-    const otherInputs = Array.from(allInputs).filter(i => i !== input);
-    const isDuplicate = otherInputs.some(i => i.value && parseInt(i.value) === parseInt(value));
+    // Determinar a linha atual (0, 1 ou 2)
+    const linha = Math.floor(index / 6);
+    const inicioLinha = linha * 6;
+    const fimLinha = inicioLinha + 5;
+    
+    // Pegar todos os inputs da linha atual
+    const inputsDaLinha = Array.from(document.querySelectorAll('.number-input'))
+        .slice(inicioLinha, fimLinha + 1);
+    
+    // Pegar números preenchidos na linha atual (excluindo o input atual)
+    const numerosPreenchidos = inputsDaLinha
+        .filter(inp => inp.value && inp !== input)
+        .map(inp => parseInt(inp.value))
+        .sort((a, b) => a - b);
 
-    if (isDuplicate) {
+    // Verificar se o número mantém a ordem crescente
+    const menoresQueAtual = numerosPreenchidos.filter(n => n < numValue);
+    const maioresQueAtual = numerosPreenchidos.filter(n => n > numValue);
+    
+    if (menoresQueAtual.length > 0 && maioresQueAtual.length > 0) {
+        const maiorMenor = Math.max(...menoresQueAtual);
+        const menorMaior = Math.min(...maioresQueAtual);
+        
+        if (numValue <= maiorMenor || numValue >= menorMaior) {
+            input.classList.add('error');
+            return;
+        }
+    }
+
+    // Verificar duplicatas APENAS dentro do grupo atual
+    const duplicadoNoGrupo = inputsDaLinha
+        .filter(i => i !== input)
+        .some(i => i.value && parseInt(i.value) === numValue);
+
+    if (duplicadoNoGrupo) {
         input.classList.add('error');
         return;
     }
 
     input.classList.remove('error');
 
-    // Move to next input if available
-    if (value.length === 2 && index < 17) {
+    // Formatar com zero à esquerda quando o input perde o foco
+    input.addEventListener('blur', function() {
+        if (this.value && !this.classList.contains('error')) {
+            this.value = this.value.padStart(2, '0');
+        }
+    });
+
+    // Mover para próximo input se tiver 2 dígitos
+    if (input.value.length === 2 && index < 17) {
         const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
-        nextInput.focus();
+        if (nextInput) nextInput.focus();
     }
 
-    // Check if all inputs are filled and valid before generating games
-    if (areAllInputsFilled() && !document.querySelector('.number-input.error')) {
+    // Verificar se todos os inputs estão preenchidos e válidos
+    if (areAllInputsFilled()) {
         generateGames();
     }
 }
+
+// Função para verificar se todos os inputs estão preenchidos
+function areAllInputsFilled() {
+    const inputs = document.querySelectorAll('.number-input');
+    return Array.from(inputs).every(input => 
+        input.value && !input.classList.contains('error'));
+}
+
+// Função para lidar com a tecla backspace
+function handleBackspace(event) {
+    if (event.key === 'Backspace' && !event.target.value) {
+        const index = parseInt(event.target.getAttribute('data-index'));
+        if (index > 0) {
+            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
+            prevInput.focus();
+        }
+    }
+}
+/*
+// Criar os campos de input
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.querySelector('.number-inputs');
+    for (let i = 0; i < 18; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 2;
+        input.className = 'number-input';
+        input.setAttribute('data-index', i);
+        container.appendChild(input);
+        
+        // Adicionar event listeners
+        input.addEventListener('input', validateAndMove);
+        input.addEventListener('keydown', handleBackspace);
+    }
+});*/
 
 // Handle backspace key
 function handleBackspace(event) {
@@ -237,7 +326,7 @@ function handleBackspace(event) {
     }
 }
 
-// Check if all inputs are filled
+// Função para verificar se todos os inputs estão preenchidos
 function areAllInputsFilled() {
     const inputs = document.querySelectorAll('.number-input');
     return Array.from(inputs).every(input => 
@@ -288,7 +377,6 @@ function displayGameSet(containerId, games, prefix) {
         gameCard.className = 'game-card';
 
         const title = document.createElement('h4');
-        // Adiciona uma classe específica baseada no tipo de jogo
         title.className = `game-title ${containerId}-title`;
         title.textContent = `${prefix} ${index + 1}`;
 
@@ -378,6 +466,7 @@ function downloadFile(content, filename, type) {
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
 }
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -477,47 +566,26 @@ h2{
 }
 
 .container, instrucaoes {
-    background-color: #f9f9f9; /* Fundo cinza claro */
-    border-radius: 12px; /* Bordas arredondadas */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra leve */
-    padding: 20px; /* Espaçamento interno */
-    text-align: left; /* Centraliza o texto */
-    font-family: Arial, sans-serif; /* Fonte padrão */
-    color: #333; /* Cor do texto */
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: left;
+    font-family: Arial, sans-serif;
+    color: #333;
     line-height: 35px;
 }
 
-/* Grade de inputs responsiva */
+/* Atualização: Grade de inputs responsiva fixada em 6x3 */
 .number-inputs {
     display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 8px;
     margin: 15px 0;
 }
 
-/* Responsividade da grade de inputs */
-@media (min-width: 320px) { /* Smartwatch/Small Mobile */
-    .number-inputs {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-@media (min-width: 375px) { /* Mobile */
-    .number-inputs {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (min-width: 768px) { /* Tablet */
-    .number-inputs {
-        grid-template-columns: repeat(6, 1fr);
-    }
-}
-
-@media (min-width: 1024px) { /* Desktop/TV */
-    .number-inputs {
-        grid-template-columns: repeat(9, 1fr);
-    }
-}
+/* Removidas media queries que alteravam a estrutura da grid */
 
 /* Estilo dos inputs */
 .number-input {
@@ -542,78 +610,45 @@ h2{
     border-radius: 8px;
 }
 
-/* AQUI INICIO */
-/* Cores para diferentes tipos de jogos */
-/* Estilos para títulos dos cards */
-.game-title {
-    margin-bottom: 10px;
-    font-size: 1.1em;
+/* Estilos para diferentes tipos de jogos */
+.games-section:nth-of-type(1) {
+    background-color: #e6f3ff;
 }
-
-/* Cores específicas para títulos dos cards */
-.original-games-title {
+.games-section:nth-of-type(1) h3 {
+    color: #0066cc;
+}
+.games-section:nth-of-type(1) .game-numbers {
     color: #0066cc;
 }
 
-.plus-one-games-title {
+.games-section:nth-of-type(2) {
+    background-color: #e6ffe6;
+}
+.games-section:nth-of-type(2) h3 {
+    color: #008000;
+}
+.games-section:nth-of-type(2) .game-numbers {
     color: #008000;
 }
 
-.minus-one-games-title {
+.games-section:nth-of-type(3) {
+    background-color: #fff2e6;
+}
+.games-section:nth-of-type(3) h3 {
+    color: #cc6600;
+}
+.games-section:nth-of-type(3) .game-numbers {
     color: #cc6600;
 }
 
-.random-games-title {
-    color: #0066cc;
-}
-
-/* AQUI INICIO */
-
-
-
-/* Cores para diferentes tipos de jogos */
-/* Estilos para Jogos Normais */
-.games-section:nth-of-type(1) {
-    background-color: #e6f3ff; /* Azul claro para fundo */
-}
-.games-section:nth-of-type(1) h3 {
-    color: #0066cc; /* Azul escuro para título */
-}
-.games-section:nth-of-type(1) .game-numbers {
-    color: #0066cc; /* Azul escuro para números */
-}
-
-/* Estilos para Jogos +1 */
-.games-section:nth-of-type(2) {
-    background-color: #e6ffe6; /* Verde claro para fundo */
-}
-.games-section:nth-of-type(2) h3 {
-    color: #008000; /* Verde escuro para título */
-}
-.games-section:nth-of-type(2) .game-numbers {
-    color: #008000; /* Verde escuro para números */
-}
-
-/* Estilos para Jogos -1 */
-.games-section:nth-of-type(3) {
-    background-color: #fff2e6; /* Laranja claro para fundo */
-}
-.games-section:nth-of-type(3) h3 {
-    color: #cc6600; /* Laranja escuro para título */
-}
-.games-section:nth-of-type(3) .game-numbers {
-    color: #cc6600; /* Laranja escuro para números */
-}
-
-/* Estilos para Jogos Aleatórios */
 .games-section:nth-of-type(4) {
-    background-color: #e6f3ff; /* Azul claro para fundo */
+    background-color: #e6f3ff;
 }
 .games-section:nth-of-type(4) h3 {
-    color: #0066cc; /* Azul escuro para título */
+    color: #0066cc;
 }
 .games-section:nth-of-type(4) .game-numbers {
-    color: #0066cc; /* Azul escuro para números */
+    color: #0066cc;
 }
 
 /* Grid de jogos responsivo */
@@ -623,19 +658,13 @@ h2{
     margin: 15px 0;
 }
 
-@media (min-width: 320px) { /* Smartwatch/Small Mobile */
-    .games-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (min-width: 768px) { /* Tablet */
+@media (min-width: 768px) {
     .games-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (min-width: 1024px) { /* Desktop/TV */
+@media (min-width: 1024px) {
     .games-grid {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -657,15 +686,6 @@ h2{
     color: #0066cc;
     padding: 10px;
     letter-spacing: 2px;
-}
-
-/* Cores diferentes para Jogos +1 e -1 */
-.games-section:nth-of-type(2) .game-numbers {
-    color: #008000; /* Verde para Jogos +1 */
-}
-
-.games-section:nth-of-type(3) .game-numbers {
-    color: #cc6600; /* Laranja para Jogos -1 */
 }
 
 /* Botões de exportação */
@@ -700,7 +720,7 @@ button:hover {
     margin: 5px 0;
 }
 
-/* Media Query para telas muito pequenas (smartwatch) */
+/* Media Query para telas muito pequenas */
 @media (max-width: 320px) {
     body {
         padding: 5px;
@@ -734,7 +754,7 @@ button:hover {
     }
 }
 
-/* Media Query para TV (telas muito grandes) */
+/* Media Query para telas muito grandes */
 @media (min-width: 1920px) {
     .container {
         max-width: 1800px;
