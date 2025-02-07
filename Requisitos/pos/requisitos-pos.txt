@@ -1,5 +1,32 @@
-Talvez eu nao tenha sido claro mas não é pra destacar o jogo inteiro 
-e sim apenas somente as dezenas do jogo que foram sorteados naquele concurso inserido no input pelo usuario
+preciso que seja feito a conferência do ultimo concurso.. assim que carregar a página... aproveita tbm. e inseri o numero do ultimo concurso dentro do input.. 
+
+
+
+
+Flask==3.1.0
+requests==2.32.3
+pandas==2.2.3
+openpyxl==3.1.5
+
+
+ Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----        05/02/2025     20:22                Requisitos
+d-----        05/02/2025     19:48                static
+d-----        07/02/2025     12:14                templates
+d-----        05/02/2025     19:54                venv-python
+d-----        05/02/2025     19:54                venv-pypy
+d-----        05/02/2025     20:22                venv
+------        30/01/2025     13:39           1096 LICENSE
+------        30/01/2025     14:27            932 PalpitesMegaSena.ps1
+------        30/01/2025     13:39             18 README.md
+------        06/02/2025     17:32           6352 app.py
+------        06/02/2025     18:21            912 requirements.txt
+------        06/02/2025     18:24            912 requirements-pypy.txt
+------        06/02/2025     18:24            912 requirements-cpython.txt
 
 
 
@@ -501,28 +528,69 @@ function downloadFile(content, filename, type) {
 // Adicione estas funções ao seu main.js
 
 // Função para verificar resultado específico
+// Modifique a função checkConcurso
 async function checkConcurso(numero) {
     try {
         const response = await fetch(`/check_result/${numero}`);
         const data = await response.json();
-        highlightNumbers(data.dezenas);
+        if (data && data.dezenas) {
+            // Converte as dezenas para números
+            const dezenasSorteadas = data.dezenas.map(Number);
+            
+            // Atualiza os números sorteados na interface
+            atualizarResultadoSorteio(numero, dezenasSorteadas);
+            
+            // Destaca os números nos jogos
+            highlightNumbers(dezenasSorteadas);
+        }
     } catch (error) {
         console.error('Erro ao verificar concurso:', error);
     }
 }
+// Função para atualizar a exibição do resultado do sorteio
+function atualizarResultadoSorteio(concurso, dezenas) {
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    const concursoNumero = document.getElementById('concurso-numero');
+    const dezenasDiv = document.getElementById('dezenas-sorteadas');
+    
+    // Atualiza o número do concurso
+    concursoNumero.textContent = concurso;
+    
+    // Atualiza as dezenas sorteadas
+    dezenasDiv.innerHTML = dezenas
+        .map(num => `<div class="dezena">${num.toString().padStart(2, '0')}</div>`)
+        .join('');
+    
+    // Mostra a seção de informações do sorteio
+    sorteioInfo.style.display = 'block';
+}
 
-// Função para destacar números
-function highlightNumbers(dezenas) {
+// Função para destacar apenas os números sorteados (mantém a mesma)
+function highlightNumbers(dezenasSorteadas) {
+    // Remove todos os destaques anteriores
+    document.querySelectorAll('.number-highlight').forEach(span => {
+        const text = span.textContent;
+        span.replaceWith(text);
+    });
+
+    // Procura os números em todos os jogos
     document.querySelectorAll('.game-numbers').forEach(gameDiv => {
-        const numbers = gameDiv.textContent.split(' ');
-        const hasMatch = numbers.some(num => dezenas.includes(num));
-        if (hasMatch) {
-            gameDiv.classList.add('highlighted');
-        } else {
-            gameDiv.classList.remove('highlighted');
-        }
+        const numbersText = gameDiv.textContent;
+        const numbers = numbersText.split(' ');
+        
+        // Cria o novo conteúdo com os números destacados
+        const newContent = numbers.map(num => {
+            const number = parseInt(num);
+            if (dezenasSorteadas.includes(number)) {
+                return `<span class="number-highlight">${num}</span>`;
+            }
+            return num;
+        }).join(' ');
+        
+        gameDiv.innerHTML = newContent;
     });
 }
+
 
 // Funções de exportação
 async function exportToFormat(format) {
@@ -577,7 +645,6 @@ function getGamesFromContainer(containerId) {
     return Array.from(container.querySelectorAll('.game-numbers'))
         .map(div => div.textContent.split(' ').map(Number));
 }
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -609,9 +676,9 @@ function getGamesFromContainer(containerId) {
             <div class="number-inputs"></div>
         </div>
 
-        <!--dicione isto antes da div .results:-->
+        <!--Adicione isto antes da div .results:-->
         <div class="concurso-checker">
-            <input type="number" id="concurso-input" placeholder="Concurso">
+            <input type="number" id="concurso-input" placeholder="Concurso" min="1">
             <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
                 Verificar Concurso
             </button>
@@ -620,6 +687,17 @@ function getGamesFromContainer(containerId) {
 
         <div class="results" style="display: none;">
             <h1>Seus Jogos</h1>
+			
+			
+			<!-- Nova div para mostrar o resultado do sorteio -->
+			<div class="sorteio-info" style="display: none;">
+				<h3>Resultado do Concurso: <span id="concurso-numero"></span></h3>
+				<div class="numeros-sorteados">
+					<span>Números Sorteados:</span>
+					<div id="dezenas-sorteadas" class="dezenas"></div>
+				</div>
+			</div>	
+			
             
             <div class="games-section">
                 <h3>Jogos Normais</h3>
@@ -656,7 +734,6 @@ function getGamesFromContainer(containerId) {
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
-
 /* Reset e configurações base */
 * {
     box-sizing: border-box;
@@ -819,792 +896,48 @@ h2{
 .export-buttons button:hover {
     opacity: 0.9;
 }
-
-@media (min-width: 768px) {
-    .games-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (min-width: 1024px) {
-    .games-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Cards dos jogos */
-.game-card {
-    background-color: white;
-    padding: 15px;
+/* Estilo para os números destacados */
+.number-highlight {
+    background-color: #ffeb3b;
+    padding: 2px 4px;
     border-radius: 4px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Números dos jogos */
-.game-numbers {
-    font-size: 1.2em;
+    display: inline-block;
+    margin: -2px 0;
     font-weight: bold;
-    color: #0066cc;
-    padding: 10px;
-    letter-spacing: 2px;
+    color: #000;
+}
+/* Estilos para a seção de resultado do sorteio */
+.sorteio-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 10px 0 20px 0;
+    text-align: center;
 }
 
-/* Botões de exportação */
-.export-buttons {
+.numeros-sorteados {
+    margin-top: 10px;
+}
+
+.dezenas {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
     justify-content: center;
-    margin: 20px 0;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
 }
 
-button {
-    padding: 12px 24px;
+.dezena {
     background-color: #0066cc;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: #0052a3;
-}
-
-/* Mensagens de erro */
-.error-message {
-    color: #ff0000;
-    font-size: 14px;
-    text-align: center;
-    margin: 5px 0;
-}
-
-/* Media Query para telas muito pequenas */
-@media (max-width: 320px) {
-    body {
-        padding: 5px;
-    }
-    
-    .container {
-        padding: 10px;
-    }
-    
-    h1 {
-        font-size: 1.5em;
-    }
-    
-    h2 {
-        font-size: 1.3em;
-    }
-    
-    h3 {
-        font-size: 1.1em;
-    }
-    
-    .number-input {
-        height: 40px;
-        font-size: 16px;
-    }
-
-    button {
-        padding: 8px 16px;
-        font-size: 14px;
-        width: 100%;
-    }
-}
-
-/* Media Query para telas muito grandes */
-@media (min-width: 1920px) {
-    .container {
-        max-width: 1800px;
-    }
-    
-    body {
-        font-size: 18px;
-    }
-    
-    .number-input {
-        height: 60px;
-        font-size: 24px;
-    }
-    
-    .game-numbers {
-        font-size: 1.5em;
-    }
-    
-    button {
-        padding: 15px 30px;
-        font-size: 20px;
-    }
-}
-
-
-
-
-Flask==3.1.0
-requests==2.32.3
-pandas==2.2.3
-openpyxl==3.1.5
-
-#blinker==1.9.0
-#cffi==1.17.0
-#click==8.1.8
-#colorama==0.4.6
-#greenlet==0.4.13
-#hpy==0.9.0
-#itsdangerous==2.2.0
-#Jinja2==3.1.5
-#MarkupSafe==3.0.2
-#readline==6.2.4.1
-#Werkzeug==3.1.3
-
-#pip install requests pandas openpyxl
-
-
-
-# blinker==1.9.0
-# click==8.1.8
-# colorama==0.4.6
-# Flask==3.1.0
-# itsdangerous==2.2.0
-# Jinja2==3.1.5
-# MarkupSafe==3.0.2
-# Werkzeug==3.1.3
-
-
-(venv-pypy) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena>
-
-(venv-python) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena> dir
-
-
-    Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
-
-
-Mode                 LastWriteTime         Length Name
-----                 -------------         ------ ----
-d-----        05/02/2025     19:48                Requisitos
-d-----        05/02/2025     19:48                static
-d-----        05/02/2025     19:48                templates
-d-----        05/02/2025     19:54                venv-python
-d-----        05/02/2025     19:54                venv-pypy
-------        05/02/2025     19:48           1096 LICENSE
-------        05/02/2025     19:48            932 PalpitesMegaSena.ps1
-------        05/02/2025     19:48             18 README.md
-------        05/02/2025     19:48           3991 app.py
-------        05/02/2025     20:14           1072 requirements.txt
-------        05/02/2025     20:14            394 requirements-pypy.txt
-------        05/02/2025     20:14            268 requirements-cpython.txt
-
-
-(venv-python) PS H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena> python app.py
- * Serving Flask app 'app'
- * Debug mode: off
-WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
- * Running on all addresses (0.0.0.0)
- * Running on http://127.0.0.1:10000
- * Running on http://10.0.0.127:10000
- 
- from flask import Flask, render_template, jsonify, request
-import random
-import os
-
-app = Flask(__name__)
-
-def validate_numbers(numbers):
-    """
-    Valida os números fornecidos pelo usuário
-    """
-    # Converter todos os números para inteiros
-    numbers = [int(n) for n in numbers if n]
-    
-    # Verificar se temos exatamente 18 números
-    if len(numbers) != 18:
-        return False, "É necessário preencher todos os 18 números"
-    
-    # Verificar se todos os números estão entre 1 e 60
-    if any(n < 1 or n > 60 for n in numbers):
-        return False, "Todos os números devem estar entre 01 e 60"
-    
-    # Verificar duplicatas dentro de cada grupo de 6 números
-    for i in range(0, len(numbers), 6):
-        grupo = numbers[i:i+6]
-        if len(grupo) != len(set(grupo)):
-            return False, f"Números repetidos encontrados no jogo {(i//6)+1}"
-    
-    return True, ""
-
-def create_games(numbers):
-    """
-    Cria os jogos mantendo a ordem original dos números
-    """
-    return [numbers[i:i+6] for i in range(0, len(numbers), 6)]
-
-def modify_numbers(numbers, increment):
-    """
-    Modifica cada número conforme as regras da Mega Sena
-    """
-    modified = []
-    
-    for n in numbers:
-        if increment > 0:
-            # Somando 1
-            if n < 60:
-                new_n = n + 1
-            else:
-                new_n = 60
-        else:
-            # Subtraindo 1
-            if n == 1:
-                new_n = 1  # Mantém 1 pois não existe 0
-            else:
-                new_n = n - 1
-        
-        modified.append(new_n)
-    
-    return modified
-
-def create_random_combinations(plus_one_games, minus_one_games):
-    """
-    Cria 4 jogos aleatórios com base nas listas modificadas
-    """
-    all_numbers = list(set(plus_one_games + minus_one_games))
-    
-    # Verifica se há números suficientes para criar 4 jogos únicos
-    if len(all_numbers) < 24:  # 4 jogos * 6 números
-        current_num = 1
-        while len(all_numbers) < 24:
-            if current_num not in all_numbers and current_num <= 60:
-                all_numbers.append(current_num)
-            current_num += 1
-    
-    random_games = []
-    used_numbers = set()
-    
-    for _ in range(4):
-        available_numbers = [n for n in all_numbers if n not in used_numbers]
-        
-        if len(available_numbers) < 6:
-            available_numbers = list(set(all_numbers) - set(used_numbers))
-        
-        game = sorted(random.sample(available_numbers, 6))
-        used_numbers.update(game)
-        random_games.append(game)
-    
-    return random_games
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/generate_games', methods=['POST'])
-def generate_games():
-    numbers = request.json.get('numbers', [])
-    
-    # Validação dos números
-    valid, message = validate_numbers(numbers)
-    if not valid:
-        return jsonify({'error': message}), 400
-    
-    # Convertendo strings para inteiros
-    numbers = [int(n) for n in numbers if n]
-    
-    # Criando jogos
-    original_games = create_games(numbers)
-    plus_one = create_games(modify_numbers(numbers, 1))
-    minus_one = create_games(modify_numbers(numbers, -1))
-    
-    # Criando combinações aleatórias
-    random_games = create_random_combinations([n for game in plus_one for n in game],
-                                              [n for game in minus_one for n in game])
-    
-    return jsonify({
-        'original_games': original_games,
-        'plus_one_games': plus_one,
-        'minus_one_games': minus_one,
-        'random_games': random_games
-    })
-
-# Configuração da porta para execução
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))  # Obtém a porta do ambiente ou usa 10000 como padrão
-    app.run(host="0.0.0.0", port=port)  # Inicia o servidor Flask na porta correta
-
- // Create input fields
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.querySelector('.number-inputs');
-    for (let i = 0; i < 18; i++) {
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.min = 1;
-        input.max = 60;
-        input.className = 'number-input';
-        input.setAttribute('data-index', i);
-        container.appendChild(input);
-        
-        // Add event listeners
-        input.addEventListener('input', validateAndMove);
-        input.addEventListener('keydown', handleBackspace);
-    }
-});
-
-// Função para formatar número com zero à esquerda
-function formatNumber(num) {
-    return num.toString().padStart(2, '0');
-}
-
-
-// Função para validar input e mover para o próximo campo
-function validateAndMove(event) {
-    const input = event.target;
-    const value = input.value.replace(/^0+/, ''); // Remove zeros à esquerda para validação
-    const numValue = parseInt(value);
-    const index = parseInt(input.getAttribute('data-index'));
-    
-    // Validar range (1-60)
-    if (numValue < 1 || numValue > 60) {
-        input.classList.add('error');
-        return;
-    }
-
-    // Determinar a linha atual (0, 1 ou 2)
-    const linha = Math.floor(index / 6);
-    const inicioLinha = linha * 6;
-    const fimLinha = inicioLinha + 5;
-    
-    // Pegar todos os inputs da linha atual
-    const inputsDaLinha = Array.from(document.querySelectorAll('.number-input'))
-        .slice(inicioLinha, fimLinha + 1);
-    
-    // Pegar números preenchidos na linha atual (excluindo o input atual)
-    const numerosPreenchidos = inputsDaLinha
-        .filter(inp => inp.value && inp !== input)
-        .map(inp => parseInt(inp.value))
-        .sort((a, b) => a - b);
-
-    // Verificar se o número mantém a ordem crescente
-    const menoresQueAtual = numerosPreenchidos.filter(n => n < numValue);
-    const maioresQueAtual = numerosPreenchidos.filter(n => n > numValue);
-    
-    if (menoresQueAtual.length > 0 && maioresQueAtual.length > 0) {
-        const maiorMenor = Math.max(...menoresQueAtual);
-        const menorMaior = Math.min(...maioresQueAtual);
-        
-        if (numValue <= maiorMenor || numValue >= menorMaior) {
-            input.classList.add('error');
-            return;
-        }
-    }
-
-    // Verificar duplicatas APENAS dentro do grupo atual
-    const duplicadoNoGrupo = inputsDaLinha
-        .filter(i => i !== input)
-        .some(i => i.value && parseInt(i.value) === numValue);
-
-    if (duplicadoNoGrupo) {
-        input.classList.add('error');
-        return;
-    }
-
-    input.classList.remove('error');
-
-    // Formatar com zero à esquerda quando o input perde o foco
-    input.addEventListener('blur', function() {
-        if (this.value && !this.classList.contains('error')) {
-            this.value = this.value.padStart(2, '0');
-        }
-    });
-
-    // Mover para próximo input se tiver 2 dígitos
-    if (input.value.length === 2 && index < 17) {
-        const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
-        if (nextInput) nextInput.focus();
-    }
-
-    // Verificar se todos os inputs estão preenchidos e válidos
-    if (areAllInputsFilled()) {
-        generateGames();
-    }
-}
-
-// Função para verificar se todos os inputs estão preenchidos
-function areAllInputsFilled() {
-    const inputs = document.querySelectorAll('.number-input');
-    return Array.from(inputs).every(input => 
-        input.value && !input.classList.contains('error'));
-}
-
-// Função para lidar com a tecla backspace
-function handleBackspace(event) {
-    if (event.key === 'Backspace' && !event.target.value) {
-        const index = parseInt(event.target.getAttribute('data-index'));
-        if (index > 0) {
-            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
-            prevInput.focus();
-        }
-    }
-}
-/*
-// Criar os campos de input
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.querySelector('.number-inputs');
-    for (let i = 0; i < 18; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.maxLength = 2;
-        input.className = 'number-input';
-        input.setAttribute('data-index', i);
-        container.appendChild(input);
-        
-        // Adicionar event listeners
-        input.addEventListener('input', validateAndMove);
-        input.addEventListener('keydown', handleBackspace);
-    }
-});*/
-
-// Handle backspace key
-function handleBackspace(event) {
-    if (event.key === 'Backspace' && !event.target.value) {
-        const index = parseInt(event.target.getAttribute('data-index'));
-        if (index > 0) {
-            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
-            prevInput.focus();
-        }
-    }
-}
-
-// Função para verificar se todos os inputs estão preenchidos
-function areAllInputsFilled() {
-    const inputs = document.querySelectorAll('.number-input');
-    return Array.from(inputs).every(input => 
-        input.value && !input.classList.contains('error'));
-}
-
-// Generate games
-async function generateGames() {
-    const inputs = document.querySelectorAll('.number-input');
-    const numbers = Array.from(inputs).map(input => parseInt(input.value));
-
-    try {
-        const response = await fetch('/generate_games', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ numbers }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const data = await response.json();
-        displayGames(data);
-        document.querySelector('.results').style.display = 'block';
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-// Display games in the UI
-function displayGames(data) {
-    displayGameSet('original-games', data.original_games, 'Jogo');
-    displayGameSet('plus-one-games', data.plus_one_games, 'Jogo +1');
-    displayGameSet('minus-one-games', data.minus_one_games, 'Jogo -1');
-    displayGameSet('random-games', data.random_games, 'Jogo Aleatório');
-}
-
-// Display a set of games
-function displayGameSet(containerId, games, prefix) {
-    const container = document.getElementById(containerId);
-    container.innerHTML = '';
-
-    games.forEach((game, index) => {
-        const gameCard = document.createElement('div');
-        gameCard.className = 'game-card';
-
-        const title = document.createElement('h4');
-        title.className = `game-title ${containerId}-title`;
-        title.textContent = `${prefix} ${index + 1}`;
-
-        const numbers = document.createElement('div');
-        numbers.className = 'game-numbers';
-        numbers.textContent = game.map(n => n.toString().padStart(2, '0')).join(' ');
-
-        gameCard.appendChild(title);
-        gameCard.appendChild(numbers);
-        container.appendChild(gameCard);
-    });
-}
-
-// Export to TXT
-function exportToTxt() {
-    let content = 'PALPITES MEGA SENA\n\n';
-
-    // Add original games
-    content += 'JOGOS NORMAIS:\n';
-    content = addGamesToContent(content, 'original-games');
-
-    // Add +1 games
-    content += '\nJOGOS +1:\n';
-    content = addGamesToContent(content, 'plus-one-games');
-
-    // Add -1 games
-    content += '\nJOGOS -1:\n';
-    content = addGamesToContent(content, 'minus-one-games');
-
-    // Add random games
-    content += '\nJOGOS ALEATÓRIOS:\n';
-    content = addGamesToContent(content, 'random-games');
-
-    // Create and trigger download
-    downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
-}
-
-// Export to Excel format (CSV)
-function exportToExcel() {
-    let content = 'PALPITES MEGA SENA\n\n';
-
-    // Add all game types
-    content += 'Jogos Normais\n';
-    content = addGamesToContent(content, 'original-games', true);
-
-    content += '\nJogos +1\n';
-    content = addGamesToContent(content, 'plus-one-games', true);
-
-    content += '\nJogos -1\n';
-    content = addGamesToContent(content, 'minus-one-games', true);
-
-    content += '\nJogos Aleatórios\n';
-    content = addGamesToContent(content, 'random-games', true);
-
-    // Create and trigger download
-    downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
-}
-
-// Helper function to add games to export content
-function addGamesToContent(content, containerId, isExcel = false) {
-    const container = document.getElementById(containerId);
-    const gameCards = container.querySelectorAll('.game-card');
-
-    gameCards.forEach(card => {
-        const numbers = card.querySelector('.game-numbers').textContent;
-        if (isExcel) {
-            // Format for Excel: separate numbers with tabs
-            content += numbers.split(' ').join('\t') + '\n';
-        } else {
-            // Format for TXT: keep space-separated
-            content += numbers + '\n';
-        }
-    });
-    
-    return content;
-}
-
-// Helper function to download file
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type: type });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-}
-
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palpites Mega Sena</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Gerador de Palpites - Mega Sena</h1>
-        
-        <div class="instrucaoes">
-            <h1>Como usar:</h1>
-            <p>1. Digite 18 números únicos entre 01 e 60</p>
-            <p>2. Os números serão validados automaticamente.</p>
-            <p>3. Após preencher todos os números, serão geradas as combinações:</p>
-            <ul>
-                <li>Jogos Normais (seus números divididos em 3 jogos)</li>
-                <li>Jogos +1 (cada número aumentado em uma unidade)</li>
-                <li>Jogos -1 (cada número diminuído em uma unidade)</li>
-                <li>Jogos Aleatórios (4 jogos baseados nas variações)</li>
-            </ul>
-        </div>
-        <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
-
-        <div class="input-section">
-            <h1>Digite 18 números (01-60):</h1>
-            <div class="number-inputs"></div>
-        </div>
-
-        <div class="results" style="display: none;">
-            <h1>Seus Jogos</h1>
-            
-            <div class="games-section">
-                <h3>Jogos Normais</h3>
-                <div id="original-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos <span style="color: green;">+1</span></h3>
-                <div id="plus-one-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
-                <div id="minus-one-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos Aleatórios</h3>
-                <div id="random-games" class="games-grid"></div>
-            </div>
-
-            <div class="export-buttons">
-                <button onclick="exportToTxt()">Exportar para TXT</button>
-                <button onclick="exportToExcel()">Exportar para Excel</button>
-            </div>
-        </div>
-    </div>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
-
-/* Reset e configurações base */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 10px;
-    background-color: #f0f0f0;
-}
-
-/* Container principal com responsividade */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-/* Títulos centralizados */
-h1, h2, h3, h4 {
-    text-align: center;
-    margin: 15px 0;
-}
-h2{
-    color:#ff0000;
-}
-
-.container, instrucaoes {
-    background-color: #f9f9f9;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    text-align: left;
-    font-family: Arial, sans-serif;
-    color: #333;
-    line-height: 35px;
-}
-
-/* Atualização: Grade de inputs responsiva fixada em 6x3 */
-.number-inputs {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    gap: 8px;
-    margin: 15px 0;
-}
-
-/* Removidas media queries que alteravam a estrutura da grid */
-
-/* Estilo dos inputs */
-.number-input {
-    width: 100%;
-    height: 45px;
-    text-align: center;
-    font-size: 18px;
-    border: 2px solid #ddd;
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.number-input.error {
-    border-color: #ff0000;
-    background-color: #ffe6e6;
-}
-
-/* Seções de jogos */
-.games-section {
-    margin: 20px 0;
-    padding: 15px;
-    border-radius: 8px;
-}
-
-/* Estilos para diferentes tipos de jogos */
-.games-section:nth-of-type(1) {
-    background-color: #e6f3ff;
-}
-.games-section:nth-of-type(1) h3 {
-    color: #0066cc;
-}
-.games-section:nth-of-type(1) .game-numbers {
-    color: #0066cc;
-}
-
-.games-section:nth-of-type(2) {
-    background-color: #e6ffe6;
-}
-.games-section:nth-of-type(2) h3 {
-    color: #008000;
-}
-.games-section:nth-of-type(2) .game-numbers {
-    color: #008000;
-}
-
-.games-section:nth-of-type(3) {
-    background-color: #fff2e6;
-}
-.games-section:nth-of-type(3) h3 {
-    color: #cc6600;
-}
-.games-section:nth-of-type(3) .game-numbers {
-    color: #cc6600;
-}
-
-.games-section:nth-of-type(4) {
-    background-color: #e6f3ff;
-}
-.games-section:nth-of-type(4) h3 {
-    color: #0066cc;
-}
-.games-section:nth-of-type(4) .game-numbers {
-    color: #0066cc;
-}
-
-/* Grid de jogos responsivo */
-.games-grid {
-    display: grid;
-    gap: 15px;
-    margin: 15px 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2em;
 }
 
 @media (min-width: 768px) {

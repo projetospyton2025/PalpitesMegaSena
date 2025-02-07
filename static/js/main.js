@@ -291,6 +291,7 @@ function downloadFile(content, filename, type) {
 // Adicione estas funções ao seu main.js
 
 // Função para verificar resultado específico
+// Modifique a função checkConcurso
 async function checkConcurso(numero) {
     try {
         const response = await fetch(`/check_result/${numero}`);
@@ -298,14 +299,39 @@ async function checkConcurso(numero) {
         if (data && data.dezenas) {
             // Converte as dezenas para números
             const dezenasSorteadas = data.dezenas.map(Number);
+            
+            // Atualiza os números sorteados na interface
+            atualizarResultadoSorteio(numero, dezenasSorteadas);
+            
+            // Destaca os números nos jogos
             highlightNumbers(dezenasSorteadas);
         }
     } catch (error) {
         console.error('Erro ao verificar concurso:', error);
     }
 }
-// Função para destacar números
-// Função para destacar apenas os números sorteados
+// Função para atualizar a exibição do resultado do sorteio
+function atualizarResultadoSorteio(concurso, dezenas) {
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    const concursoNumero = document.getElementById('concurso-numero');
+    const dezenasDiv = document.getElementById('dezenas-sorteadas');
+    
+    // Atualiza o número do concurso
+    concursoNumero.textContent = concurso;
+    
+    // Atualiza as dezenas sorteadas
+    dezenasDiv.innerHTML = dezenas
+        .map(num => `<div class="dezena">${num.toString().padStart(2, '0')}</div>`)
+        .join('');
+    
+    // Mostra a seção de informações do sorteio
+    sorteioInfo.style.display = 'block';
+}
+
+
+
+
+// Função para destacar apenas os números sorteados (mantém a mesma)
 function highlightNumbers(dezenasSorteadas) {
     // Remove todos os destaques anteriores
     document.querySelectorAll('.number-highlight').forEach(span => {
@@ -330,6 +356,8 @@ function highlightNumbers(dezenasSorteadas) {
         gameDiv.innerHTML = newContent;
     });
 }
+
+
 // Funções de exportação
 async function exportToFormat(format) {
     const games = {

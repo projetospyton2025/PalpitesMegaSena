@@ -25,13 +25,13 @@
         <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
 
         <div class="input-section">
-            <h1>Digite 18 números <small>(01-60)</small>:</h1>
+            <h1>Digite 18 números <span><small>(01-60)</small></span>:</h1>
             <div class="number-inputs"></div>
         </div>
 
-        <!--dicione isto antes da div .results:-->
+        <!--Adicione isto antes da div .results:-->
         <div class="concurso-checker">
-            <input type="number" id="concurso-input" placeholder="Concurso">
+            <input type="number" id="concurso-input" placeholder="Concurso" min="1">
             <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
                 Verificar Concurso
             </button>
