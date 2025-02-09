@@ -1,34 +1,53 @@
-preciso que seja feito a conferência do ultimo concurso.. assim que carregar a página... aproveita tbm. e inseri o numero do ultimo concurso dentro do input.. 
-
-
-
-
 Flask==3.1.0
 requests==2.32.3
 pandas==2.2.3
 openpyxl==3.1.5
 
+#blinker==1.9.0
+#cffi==1.17.0
+#click==8.1.8
+#colorama==0.4.6
+#greenlet==0.4.13
+#hpy==0.9.0
+#itsdangerous==2.2.0
+#Jinja2==3.1.5
+#MarkupSafe==3.0.2
+#readline==6.2.4.1
+#Werkzeug==3.1.3
 
- Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
+#pip install requests pandas openpyxl
+
+
+
+# blinker==1.9.0
+# click==8.1.8
+# colorama==0.4.6
+# Flask==3.1.0
+# itsdangerous==2.2.0
+# Jinja2==3.1.5
+# MarkupSafe==3.0.2
+# Werkzeug==3.1.3
+
+
+Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
 
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d-----        05/02/2025     20:22                Requisitos
-d-----        05/02/2025     19:48                static
-d-----        07/02/2025     12:14                templates
-d-----        05/02/2025     19:54                venv-python
-d-----        05/02/2025     19:54                venv-pypy
-d-----        05/02/2025     20:22                venv
+d-----        08/02/2025     10:44                .git
+d-----        08/02/2025     10:44                Requisitos
+d-----        08/02/2025     10:44                static
+d-----        08/02/2025     10:44                templates
+d-----        08/02/2025     10:47                venv
+d-----        08/02/2025     10:52                venv-pypy
+d-----        08/02/2025     11:02                venv-python
+------        06/02/2025     17:32           6352 app.py
 ------        30/01/2025     13:39           1096 LICENSE
 ------        30/01/2025     14:27            932 PalpitesMegaSena.ps1
 ------        30/01/2025     13:39             18 README.md
-------        06/02/2025     17:32           6352 app.py
-------        06/02/2025     18:21            912 requirements.txt
-------        06/02/2025     18:24            912 requirements-pypy.txt
 ------        06/02/2025     18:24            912 requirements-cpython.txt
-
-
+------        06/02/2025     18:24            912 requirements-pypy.txt
+------        06/02/2025     18:21            912 requirements.txt
 
 from flask import Flask, render_template, jsonify, request
 import random
@@ -525,33 +544,83 @@ function downloadFile(content, filename, type) {
     window.URL.revokeObjectURL(url);
 }
 
-// Adicione estas funções ao seu main.js
-
-// Função para verificar resultado específico
-// Modifique a função checkConcurso
+// Função para verificar resultado específico - Versão corrigida
 async function checkConcurso(numero) {
+	
+	// Adicione no início da função checkConcurso
+	console.log('Verificando concurso:', numero);
+	console.log('Response:', data);
+	console.log('Dezenas convertidas:', dezenasSorteadas);
+		
     try {
+        // Mostra a seção de resultado antes da requisição
+        const sorteioInfo = document.querySelector('.sorteio-info');
+        sorteioInfo.style.display = 'block';
+
         const response = await fetch(`/check_result/${numero}`);
         const data = await response.json();
+        
         if (data && data.dezenas) {
-            // Converte as dezenas para números
-            const dezenasSorteadas = data.dezenas.map(Number);
+            // Garante que as dezenas são números
+            const dezenasSorteadas = data.dezenas.map(d => parseInt(d, 10));
             
-            // Atualiza os números sorteados na interface
+            // Atualiza a interface com o resultado
             atualizarResultadoSorteio(numero, dezenasSorteadas);
             
-            // Destaca os números nos jogos
+            // Aplica o destaque
             highlightNumbers(dezenasSorteadas);
+            
+            // Log para debug
+            console.log('Dezenas sorteadas:', dezenasSorteadas);
         }
     } catch (error) {
         console.error('Erro ao verificar concurso:', error);
+        // Mostra mensagem de erro para o usuário
+        alert('Erro ao verificar o concurso. Tente novamente.');
     }
 }
-// Função para atualizar a exibição do resultado do sorteio
+
+// Função para destacar números - Versão melhorada
+function highlightNumbers(dezenasSorteadas) {
+    if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
+        console.error('Dezenas inválidas:', dezenasSorteadas);
+        return;
+    }
+
+    // Remove destaques anteriores
+    document.querySelectorAll('.number-highlight').forEach(span => {
+        const text = span.textContent;
+        span.replaceWith(text);
+    });
+
+    // Destaca os números em todos os jogos
+    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
+        const numbersText = gameDiv.textContent;
+        const numbers = numbersText.split(' ').map(n => n.trim());
+        
+        // Cria o novo conteúdo com os números destacados
+        const newContent = numbers.map(num => {
+            const number = parseInt(num, 10);
+            if (dezenasSorteadas.includes(number)) {
+                return `<span class="number-highlight">${num}</span>`;
+            }
+            return num;
+        }).join(' ');
+        
+        gameDiv.innerHTML = newContent;
+    });
+}
+
+// Função para atualizar resultado do sorteio - Versão melhorada
 function atualizarResultadoSorteio(concurso, dezenas) {
     const sorteioInfo = document.querySelector('.sorteio-info');
     const concursoNumero = document.getElementById('concurso-numero');
     const dezenasDiv = document.getElementById('dezenas-sorteadas');
+    
+    if (!sorteioInfo || !concursoNumero || !dezenasDiv) {
+        console.error('Elementos da interface não encontrados');
+        return;
+    }
     
     // Atualiza o número do concurso
     concursoNumero.textContent = concurso;
@@ -565,31 +634,39 @@ function atualizarResultadoSorteio(concurso, dezenas) {
     sorteioInfo.style.display = 'block';
 }
 
-// Função para destacar apenas os números sorteados (mantém a mesma)
-function highlightNumbers(dezenasSorteadas) {
-    // Remove todos os destaques anteriores
-    document.querySelectorAll('.number-highlight').forEach(span => {
-        const text = span.textContent;
-        span.replaceWith(text);
-    });
+// Adicione isso no início do seu arquivo para verificação automática
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Tenta obter o último resultado
+        const response = await fetch('/generate_games', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ numbers: [] }) // Envia array vazio para apenas obter o último resultado
+        });
 
-    // Procura os números em todos os jogos
-    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
-        const numbersText = gameDiv.textContent;
-        const numbers = numbersText.split(' ');
+        const data = await response.json();
         
-        // Cria o novo conteúdo com os números destacados
-        const newContent = numbers.map(num => {
-            const number = parseInt(num);
-            if (dezenasSorteadas.includes(number)) {
-                return `<span class="number-highlight">${num}</span>`;
-            }
-            return num;
-        }).join(' ');
-        
-        gameDiv.innerHTML = newContent;
-    });
-}
+        if (data.latest_result) {
+            const concurso = data.latest_result.concurso;
+            const dezenas = data.latest_result.dezenas.map(d => parseInt(d, 10));
+            
+            // Preenche o input com o número do último concurso
+            const input = document.getElementById('concurso-input');
+            if (input) input.value = concurso;
+            
+            // Atualiza a interface com o resultado
+            atualizarResultadoSorteio(concurso, dezenas);
+            highlightNumbers(dezenas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar último resultado:', error);
+    }
+});
+
+
+
 
 
 // Funções de exportação
@@ -672,7 +749,7 @@ function getGamesFromContainer(containerId) {
         <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
 
         <div class="input-section">
-            <h1>Digite 18 números <small>(01-60)</small>:</h1>
+            <h1>Digite 18 números <span><small>(01-60)</small></span>:</h1>
             <div class="number-inputs"></div>
         </div>
 
@@ -897,14 +974,22 @@ h2{
     opacity: 0.9;
 }
 /* Estilo para os números destacados */
+/* Estilo melhorado para números destacados */
 .number-highlight {
     background-color: #ffeb3b;
-    padding: 2px 4px;
+    padding: 2px 6px;
     border-radius: 4px;
     display: inline-block;
-    margin: -2px 0;
+    margin: 0 2px;
     font-weight: bold;
     color: #000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.number-highlight:hover {
+    background-color: #ffd700;
+    transform: scale(1.1);
 }
 /* Estilos para a seção de resultado do sorteio */
 .sorteio-info {

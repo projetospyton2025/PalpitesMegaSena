@@ -5,6 +5,10 @@ import requests
 import pandas as pd
 import openpyxl
 from datetime import datetime
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -76,17 +80,22 @@ def create_games_from_original(original_games):
         additional_games.append(game)
     
     return additional_games
-
+    
 def get_latest_result():
     """
-    Busca o último resultado da Mega Sena via API
+    Busca o último resultado da Mega Sena via nova API da Caixa
     """
     try:
-        response = requests.get('https://loteriascaixa-api.herokuapp.com/api/megasena/latest')
-        return response.json()
+        response = requests.get('https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena')
+        data = response.json()
+        return {
+            'concurso': data['numero'],
+            'data': data['dataApuracao'],
+            'dezenas': data['listaDezenas'],
+            'premiacoes': data['listaRateioPremio']
+        }
     except:
         return None
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -131,14 +140,58 @@ def generate_games():
 @app.route('/check_result/<int:concurso>', methods=['GET'])
 def check_result(concurso):
     """
-    Busca o resultado de um concurso específico
+    Busca o resultado de um concurso específico usando a API da Caixa
     """
     try:
-        response = requests.get(f'https://loteriascaixa-api.herokuapp.com/api/megasena/{concurso}')
-        return jsonify(response.json())
-    except:
-        return jsonify({'error': 'Concurso não encontrado'}), 404
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        
+        # Se concurso for 0, busca o último resultado
+        url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'
+        if concurso > 0:
+            url = f'{url}/{concurso}'
+            
+        print(f"Acessando URL: {url}")
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code != 200:
+            return jsonify({
+                'error': f'Erro ao acessar API (Status {response.status_code})'
+            }), response.status_code
+            
+        data = response.json()
+        
+        # Retorna os dados mantendo a estrutura original da API
+        resultado = {
+            'numero': data['numero'],
+            'dataApuracao': data['dataApuracao'],
+            'listaDezenas': data['listaDezenas'],
+            'dezenasSorteadasOrdemSorteio': data['dezenasSorteadasOrdemSorteio'],
+            'listaRateioPremio': data['listaRateioPremio'],
+            'acumulado': data['acumulado'],
+            'valorAcumuladoProximoConcurso': data['valorAcumuladoProximoConcurso'],
+            'dataProximoConcurso': data['dataProximoConcurso'],
+            'valorEstimadoProximoConcurso': data['valorEstimadoProximoConcurso'],
+            'valorArrecadado': data['valorArrecadado'],
+            'localSorteio': data['localSorteio'],
+            'nomeMunicipioUFSorteio': data['nomeMunicipioUFSorteio']
+        }
+        
+        return jsonify(resultado)
+        
+    except requests.exceptions.Timeout:
+        return jsonify({'error': 'Timeout ao acessar API'}), 504
+        
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Erro na requisição: {str(e)}'}), 500
+        
+    except Exception as e:
+        return jsonify({'error': f'Erro inesperado: {str(e)}'}), 500
 
+
+        
 @app.route('/export/<format>', methods=['POST'])
 def export_games(format):
     """

@@ -161,22 +161,30 @@ h2{
     opacity: 0.9;
 }
 /* Estilo para os números destacados */
+/* Estilo melhorado para números destacados */
 .number-highlight {
     background-color: #ffeb3b;
-    padding: 2px 4px;
+    padding: 2px 6px;
     border-radius: 4px;
     display: inline-block;
-    margin: -2px 0;
+    margin: 0 2px;
     font-weight: bold;
     color: #000;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.number-highlight:hover {
+    background-color: #ffd700;
+    transform: scale(1.1);
 }
 /* Estilos para a seção de resultado do sorteio */
 .sorteio-info {
     background-color: #f8f9fa;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
-    margin: 10px 0 20px 0;
-    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .numeros-sorteados {
@@ -185,10 +193,10 @@ h2{
 
 .dezenas {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
     flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
 }
 
 .dezena {
@@ -202,8 +210,26 @@ h2{
     justify-content: center;
     font-weight: bold;
     font-size: 1.2em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.premiacoes {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+.premiacoes h4 {
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.premiacoes p {
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
 @media (min-width: 768px) {
     .games-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -260,10 +286,12 @@ button:hover {
 
 /* Mensagens de erro */
 .error-message {
-    color: #ff0000;
-    font-size: 14px;
-    text-align: center;
-    margin: 5px 0;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 10px 0;
 }
 
 /* Media Query para telas muito pequenas */

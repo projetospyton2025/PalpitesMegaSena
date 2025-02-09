@@ -1,3 +1,25 @@
+// Carrega o último resultado automaticamente ao iniciar
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/check_result/0'); // 0 para pegar o último resultado
+        const data = await response.json();
+        
+        if (data && !data.error) {
+            const concurso = data.concurso;
+            const dezenas = data.dezenas.map(d => parseInt(d, 10));
+            
+            // Preenche o input com o número do último concurso
+            const input = document.getElementById('concurso-input');
+            if (input) input.value = concurso;
+            
+            // Atualiza a interface com o resultado
+            atualizarResultadoSorteio(data);
+            highlightNumbers(dezenas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar último resultado:', error);
+    }
+});
 // Create input fields
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.number-inputs');
@@ -288,65 +310,146 @@ function downloadFile(content, filename, type) {
     window.URL.revokeObjectURL(url);
 }
 
-// Adicione estas funções ao seu main.js
-
 // Função para verificar resultado específico
-// Modifique a função checkConcurso
 async function checkConcurso(numero) {
+    console.log('Verificando concurso:', numero);
+    
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    sorteioInfo.style.display = 'block';
+    sorteioInfo.innerHTML = `
+        <div class="loading">
+            <p>Carregando resultado do concurso ${numero}...</p>
+        </div>
+    `;
+
     try {
         const response = await fetch(`/check_result/${numero}`);
+        console.log('Status da resposta:', response.status);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
         const data = await response.json();
-        if (data && data.dezenas) {
-            // Converte as dezenas para números
-            const dezenasSorteadas = data.dezenas.map(Number);
-            
-            // Atualiza os números sorteados na interface
-            atualizarResultadoSorteio(numero, dezenasSorteadas);
-            
-            // Destaca os números nos jogos
+        console.log('Dados recebidos:', data);
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Atualiza a interface
+        atualizarResultadoSorteio(data);
+        
+        // Aplica destaque nos números
+        if (data.listaDezenas) {
+            const dezenasSorteadas = data.listaDezenas.map(d => parseInt(d, 10));
             highlightNumbers(dezenasSorteadas);
         }
+
     } catch (error) {
-        console.error('Erro ao verificar concurso:', error);
+        console.error('Erro:', error);
+        sorteioInfo.innerHTML = `
+            <div class="error-message">
+                <p>Não foi possível carregar o resultado do concurso ${numero}</p>
+                <p>Erro: ${error.message}</p>
+                <button onclick="checkConcurso(${numero})" class="retry-button">
+                    Tentar Novamente
+                </button>
+            </div>
+        `;
     }
 }
-// Função para atualizar a exibição do resultado do sorteio
-function atualizarResultadoSorteio(concurso, dezenas) {
+
+// Função para atualizar o resultado do sorteio
+function atualizarResultadoSorteio(data) {
     const sorteioInfo = document.querySelector('.sorteio-info');
-    const concursoNumero = document.getElementById('concurso-numero');
-    const dezenasDiv = document.getElementById('dezenas-sorteadas');
     
-    // Atualiza o número do concurso
-    concursoNumero.textContent = concurso;
-    
-    // Atualiza as dezenas sorteadas
-    dezenasDiv.innerHTML = dezenas
-        .map(num => `<div class="dezena">${num.toString().padStart(2, '0')}</div>`)
-        .join('');
-    
-    // Mostra a seção de informações do sorteio
-    sorteioInfo.style.display = 'block';
+    // Formata valores monetários
+    const formatMoney = (value) => {
+        return value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    };
+
+    // Template com todas as informações
+    sorteioInfo.innerHTML = `
+        <div class="resultado-container">
+            <h3>Resultado do Concurso: ${data.numero}</h3>
+            <p class="data-sorteio">Data do Sorteio: ${data.dataApuracao}</p>
+            <p class="local-sorteio">Local: ${data.localSorteio} - ${data.nomeMunicipioUFSorteio}</p>
+            
+            <div class="numeros-sorteados">
+                <h4>Números por Ordem de Sorteio:</h4>
+                <div class="dezenas">
+                    ${data.dezenasSorteadasOrdemSorteio.map(num => 
+                        `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
+                    ).join('')}
+                </div>
+                
+                <h4>Números em Ordem Crescente:</h4>
+                <div class="dezenas">
+                    ${data.listaDezenas.map(num => 
+                        `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
+                    ).join('')}
+                </div>
+            </div>
+            
+            <div class="premiacoes">
+                <h4>Premiações:</h4>
+                ${data.listaRateioPremio.map(premio => `
+                    <div class="premio-item">
+                        <span class="faixa">${premio.descricaoFaixa}</span>
+                        <span class="ganhadores">${premio.numeroDeGanhadores} 
+                            ${premio.numeroDeGanhadores === 1 ? 'ganhador' : 'ganhadores'}</span>
+                        <span class="valor">${formatMoney(premio.valorPremio)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="arrecadacao">
+                <h4>Informações Adicionais:</h4>
+                <p>Valor Arrecadado: ${formatMoney(data.valorArrecadado)}</p>
+            </div>
+            
+            <div class="proximo-concurso">
+                <h4>Próximo Concurso:</h4>
+                ${data.dataProximoConcurso ? 
+                    `<p>Data: ${data.dataProximoConcurso}</p>` : ''}
+                ${data.acumulado ? 
+                    `<p class="acumulado">ACUMULOU!</p>
+                     <p>Valor Acumulado: ${formatMoney(data.valorAcumuladoProximoConcurso)}</p>` : 
+                    ''}
+                ${data.valorEstimadoProximoConcurso > 0 ?
+                    `<p>Prêmio Estimado: ${formatMoney(data.valorEstimadoProximoConcurso)}</p>` : 
+                    ''}
+            </div>
+        </div>
+    `;
 }
 
-
-
-
-// Função para destacar apenas os números sorteados (mantém a mesma)
+// Função para destacar números nos jogos
 function highlightNumbers(dezenasSorteadas) {
-    // Remove todos os destaques anteriores
+    console.log('Destacando números:', dezenasSorteadas);
+    
+    if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
+        console.error('Dezenas inválidas:', dezenasSorteadas);
+        return;
+    }
+
+    // Remove destaques anteriores
     document.querySelectorAll('.number-highlight').forEach(span => {
         const text = span.textContent;
         span.replaceWith(text);
     });
 
-    // Procura os números em todos os jogos
+    // Destaca os números em todos os jogos
     document.querySelectorAll('.game-numbers').forEach(gameDiv => {
         const numbersText = gameDiv.textContent;
-        const numbers = numbersText.split(' ');
+        const numbers = numbersText.split(' ').map(n => n.trim());
         
-        // Cria o novo conteúdo com os números destacados
         const newContent = numbers.map(num => {
-            const number = parseInt(num);
+            const number = parseInt(num, 10);
             if (dezenasSorteadas.includes(number)) {
                 return `<span class="number-highlight">${num}</span>`;
             }
@@ -358,6 +461,39 @@ function highlightNumbers(dezenasSorteadas) {
 }
 
 
+
+// Função para destacar números
+function highlightNumbers(dezenasSorteadas) {
+    console.log('Destacando números:', dezenasSorteadas);
+    
+    if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
+        console.error('Dezenas inválidas:', dezenasSorteadas);
+        return;
+    }
+
+    // Remove destaques anteriores
+    document.querySelectorAll('.number-highlight').forEach(span => {
+        const text = span.textContent;
+        span.replaceWith(text);
+    });
+
+    // Destaca os números em todos os jogos
+    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
+        const numbersText = gameDiv.textContent;
+        const numbers = numbersText.split(' ').map(n => n.trim());
+        
+        // Cria o novo conteúdo com os números destacados
+        const newContent = numbers.map(num => {
+            const number = parseInt(num, 10);
+            if (dezenasSorteadas.includes(number)) {
+                return `<span class="number-highlight">${num}</span>`;
+            }
+            return num;
+        }).join(' ');
+        
+        gameDiv.innerHTML = newContent;
+    });
+}
 // Funções de exportação
 async function exportToFormat(format) {
     const games = {
