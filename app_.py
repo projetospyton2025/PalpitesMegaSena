@@ -12,17 +12,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
-# Configuração do proxy
-# Lista de proxies fornecidos
-PROXIES = {
-    "http": "http://101.200.243.204:7890",
-    "https": "http://84.247.135.52:32768",
-}
-
 def validate_numbers(numbers):
     """
     Valida os números fornecidos pelo usuário
     """
+    # Código existente de validação permanece o mesmo
     numbers = [int(n) for n in numbers if n]
     
     if len(numbers) != 18:
@@ -61,9 +55,11 @@ def create_random_combinations_from_plus_one(plus_one_games):
     """
     Cria 4 jogos aleatórios baseados exclusivamente nos Jogos +1
     """
+    # Pega todos os números únicos dos jogos +1
     all_numbers = list(set([num for game in plus_one_games for num in game]))
     random_games = []
     
+    # Gera 4 jogos aleatórios (1,2,3,4)
     for _ in range(4):
         game = sorted(random.sample(all_numbers, 6))
         random_games.append(game)
@@ -74,9 +70,11 @@ def create_games_from_original(original_games):
     """
     Cria jogos 5 e 6 baseados exclusivamente nos jogos originais 1,2,3
     """
+    # Pega todos os números únicos dos jogos originais
     all_numbers = list(set([num for game in original_games for num in game]))
     additional_games = []
     
+    # Gera 2 jogos adicionais (5 e 6)
     for _ in range(2):
         game = sorted(random.sample(all_numbers, 6))
         additional_games.append(game)
@@ -85,13 +83,10 @@ def create_games_from_original(original_games):
     
 def get_latest_result():
     """
-    Busca o último resultado da Mega Sena via nova API da Caixa usando proxy
+    Busca o último resultado da Mega Sena via nova API da Caixa
     """
     try:
-        response = requests.get(
-            'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena',
-            proxies=PROXIES
-        )
+        response = requests.get('https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena')
         data = response.json()
         return {
             'concurso': data['numero'],
@@ -101,7 +96,6 @@ def get_latest_result():
         }
     except:
         return None
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -116,15 +110,23 @@ def generate_games():
     
     numbers = [int(n) for n in numbers if n]
     
+    # Gera os jogos originais
     original_games = create_games(numbers)
+    
+    # Gera os jogos +1 e -1
     plus_one = create_games(modify_numbers(numbers, 1))
     minus_one = create_games(modify_numbers(numbers, -1))
     
+    # Gera os 4 primeiros jogos aleatórios baseados nos jogos +1
     random_games = create_random_combinations_from_plus_one(plus_one)
+    
+    # Gera os jogos 5 e 6 baseados nos jogos originais
     additional_games = create_games_from_original(original_games)
     
+    # Combina todos os jogos aleatórios
     random_games.extend(additional_games)
     
+    # Busca o último resultado
     latest_result = get_latest_result()
     
     return jsonify({
@@ -138,18 +140,21 @@ def generate_games():
 @app.route('/check_result/<int:concurso>', methods=['GET'])
 def check_result(concurso):
     """
-    Busca o resultado de um concurso específico usando a API da Caixa e proxy
+    Busca o resultado de um concurso específico usando a API da Caixa
     """
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
         
+        # Se concurso for 0, busca o último resultado
         url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'
         if concurso > 0:
             url = f'{url}/{concurso}'
             
-        response = requests.get(url, headers=headers, proxies=PROXIES, timeout=10)
+        print(f"Acessando URL: {url}")
+        
+        response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code != 200:
             return jsonify({
@@ -158,6 +163,7 @@ def check_result(concurso):
             
         data = response.json()
         
+        # Retorna os dados mantendo a estrutura original da API
         resultado = {
             'numero': data['numero'],
             'dataApuracao': data['dataApuracao'],
@@ -184,6 +190,8 @@ def check_result(concurso):
     except Exception as e:
         return jsonify({'error': f'Erro inesperado: {str(e)}'}), 500
 
+
+        
 @app.route('/export/<format>', methods=['POST'])
 def export_games(format):
     """
@@ -199,28 +207,50 @@ def export_games(format):
                 content += " - ".join(str(num).zfill(2) for num in game) + "\n"
             content += "\n"
         
-        return jsonify({'content': content, 'filename': 'palpites_mega_sena.txt'})
+        return jsonify({
+            'content': content,
+            'filename': 'palpites_mega_sena.txt'
+        })
     
     elif format == 'html':
         html_content = """
         <html>
-        <head><title>Palpites Mega Sena</title></head>
-        <body><h1>Palpites Mega Sena</h1>
+        <head>
+            <title>Palpites Mega Sena</title>
+            <style>
+                body { font-family: Arial; }
+                .game { margin: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>Palpites Mega Sena</h1>
         """
         
         for game_type, game_list in games.items():
             html_content += f"<h2>{game_type}</h2>"
             for game in game_list:
                 numbers = " - ".join(str(num).zfill(2) for num in game)
-                html_content += f'<div>{numbers}</div>'
+                html_content += f'<div class="game">{numbers}</div>'
         
         html_content += "</body></html>"
         
-        return jsonify({'content': html_content, 'filename': 'palpites_mega_sena.html'})
+        return jsonify({
+            'content': html_content,
+            'filename': 'palpites_mega_sena.html'
+        })
     
     elif format == 'xlsx':
-        dfs = {game_type: pd.DataFrame(game_list) for game_type, game_list in games.items()}
-        return jsonify({'content': {sheet: df.to_dict('records') for sheet, df in dfs.items()}, 'filename': 'palpites_mega_sena.xlsx'})
+        # Cria um DataFrame para cada tipo de jogo
+        dfs = {}
+        for game_type, game_list in games.items():
+            df = pd.DataFrame(game_list)
+            df.columns = [f'Dezena {i+1}' for i in range(6)]
+            dfs[game_type] = df
+        
+        return jsonify({
+            'content': {sheet: df.to_dict('records') for sheet, df in dfs.items()},
+            'filename': 'palpites_mega_sena.xlsx'
+        })
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
