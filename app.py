@@ -9,14 +9,70 @@ import logging
 
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Lista de proxies brasileiros
+BRAZIL_PROXIES = [
+    {
+        "http": "http://200.155.37.185:3128",
+        "https": "http://200.155.37.185:3128"
+    },
+    {
+        "http": "http://187.19.158.13:3128",
+        "https": "http://187.19.158.13:3128"
+    },
+    {
+        "http": "http://177.69.21.93:8080",
+        "https": "http://177.69.21.93:8080"
+    }
+]
+
+def make_request_with_proxy(url):
+    """
+    Tenta fazer uma requisição usando diferentes proxies
+    """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept-Language': 'pt-BR,pt;q=0.9'
+    }
+
+    errors = []
+    # Tenta cada proxy da lista
+    for proxy in BRAZIL_PROXIES:
+        try:
+            logger.debug(f"Tentando proxy: {proxy}")
+            response = requests.get(
+                url,
+                proxies=proxy,
+                headers=headers,
+                timeout=10
+            )
+            if response.status_code == 200:
+                return response.json()
+        except Exception as e:
+            errors.append(f"Erro com proxy {proxy}: {str(e)}")
+            logger.warning(f"Erro com proxy {proxy}: {str(e)}")
+            continue
+
+    # Se todos os proxies falharem, tenta sem proxy
+    try:
+        logger.debug("Tentando sem proxy")
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception(f"Status code: {response.status_code}")
+    except Exception as e:
+        errors.append(f"Erro sem proxy: {str(e)}")
+        logger.error(f"Erro sem proxy: {str(e)}")
+        raise Exception(f"Todos os proxies falharam. Erros: {'; '.join(errors)}")
 
 def validate_numbers(numbers):
     """
     Valida os números fornecidos pelo usuário
     """
-    # Código existente de validação permanece o mesmo
     numbers = [int(n) for n in numbers if n]
     
     if len(numbers) != 18:
@@ -55,11 +111,9 @@ def create_random_combinations_from_plus_one(plus_one_games):
     """
     Cria 4 jogos aleatórios baseados exclusivamente nos Jogos +1
     """
-    # Pega todos os números únicos dos jogos +1
     all_numbers = list(set([num for game in plus_one_games for num in game]))
     random_games = []
     
-    # Gera 4 jogos aleatórios (1,2,3,4)
     for _ in range(4):
         game = sorted(random.sample(all_numbers, 6))
         random_games.append(game)
@@ -70,32 +124,31 @@ def create_games_from_original(original_games):
     """
     Cria jogos 5 e 6 baseados exclusivamente nos jogos originais 1,2,3
     """
-    # Pega todos os números únicos dos jogos originais
     all_numbers = list(set([num for game in original_games for num in game]))
     additional_games = []
     
-    # Gera 2 jogos adicionais (5 e 6)
     for _ in range(2):
         game = sorted(random.sample(all_numbers, 6))
         additional_games.append(game)
     
     return additional_games
-    
+
 def get_latest_result():
     """
-    Busca o último resultado da Mega Sena via nova API da Caixa
+    Busca o último resultado da Mega Sena via nova API da Caixa usando proxy
     """
     try:
-        response = requests.get('https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena')
-        data = response.json()
+        data = make_request_with_proxy('https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena')
         return {
             'concurso': data['numero'],
             'data': data['dataApuracao'],
             'dezenas': data['listaDezenas'],
             'premiacoes': data['listaRateioPremio']
         }
-    except:
+    except Exception as e:
+        logger.error(f"Erro ao buscar último resultado: {str(e)}")
         return None
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -110,23 +163,15 @@ def generate_games():
     
     numbers = [int(n) for n in numbers if n]
     
-    # Gera os jogos originais
     original_games = create_games(numbers)
-    
-    # Gera os jogos +1 e -1
     plus_one = create_games(modify_numbers(numbers, 1))
     minus_one = create_games(modify_numbers(numbers, -1))
     
-    # Gera os 4 primeiros jogos aleatórios baseados nos jogos +1
     random_games = create_random_combinations_from_plus_one(plus_one)
-    
-    # Gera os jogos 5 e 6 baseados nos jogos originais
     additional_games = create_games_from_original(original_games)
     
-    # Combina todos os jogos aleatórios
     random_games.extend(additional_games)
     
-    # Busca o último resultado
     latest_result = get_latest_result()
     
     return jsonify({
@@ -143,27 +188,14 @@ def check_result(concurso):
     Busca o resultado de um concurso específico usando a API da Caixa
     """
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-        
-        # Se concurso for 0, busca o último resultado
         url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'
         if concurso > 0:
             url = f'{url}/{concurso}'
             
-        print(f"Acessando URL: {url}")
+        logger.debug(f"Acessando URL: {url}")
         
-        response = requests.get(url, headers=headers, timeout=10)
+        data = make_request_with_proxy(url)
         
-        if response.status_code != 200:
-            return jsonify({
-                'error': f'Erro ao acessar API (Status {response.status_code})'
-            }), response.status_code
-            
-        data = response.json()
-        
-        # Retorna os dados mantendo a estrutura original da API
         resultado = {
             'numero': data['numero'],
             'dataApuracao': data['dataApuracao'],
@@ -181,17 +213,45 @@ def check_result(concurso):
         
         return jsonify(resultado)
         
-    except requests.exceptions.Timeout:
-        return jsonify({'error': 'Timeout ao acessar API'}), 504
-        
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Erro na requisição: {str(e)}'}), 500
-        
     except Exception as e:
-        return jsonify({'error': f'Erro inesperado: {str(e)}'}), 500
+        error_msg = f"Erro ao buscar concurso {concurso}: {str(e)}"
+        logger.error(error_msg)
+        return jsonify({'error': error_msg}), 500
 
+@app.route('/test_proxies')
+def test_proxies():
+    """
+    Rota para testar os proxies configurados
+    """
+    results = []
+    test_url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'
+    
+    for proxy in BRAZIL_PROXIES:
+        try:
+            start_time = datetime.now()
+            response = requests.get(
+                test_url,
+                proxies=proxy,
+                headers={'User-Agent': 'Mozilla/5.0'},
+                timeout=5
+            )
+            end_time = datetime.now()
+            
+            results.append({
+                'proxy': proxy,
+                'status': 'working',
+                'response_time': f"{(end_time - start_time).total_seconds():.2f}s",
+                'status_code': response.status_code
+            })
+        except Exception as e:
+            results.append({
+                'proxy': proxy,
+                'status': 'failed',
+                'error': str(e)
+            })
+    
+    return jsonify(results)
 
-        
 @app.route('/export/<format>', methods=['POST'])
 def export_games(format):
     """
@@ -240,7 +300,6 @@ def export_games(format):
         })
     
     elif format == 'xlsx':
-        # Cria um DataFrame para cada tipo de jogo
         dfs = {}
         for game_type, game_list in games.items():
             df = pd.DataFrame(game_list)
