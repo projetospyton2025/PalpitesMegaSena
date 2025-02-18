@@ -22,6 +22,25 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+.jogos-normais {
+    color: #008000;
+    font-weight: bold ;
+}
+
+.jogos-mais-um {
+    color: #cc6600;
+    font-weight: bold ;
+}
+
+.jogos-menos-um {
+    color: #0066cc;
+    font-weight: bold ;
+}
+
+.jogos-aleatorios {
+    color: #000000;
+    font-weight: bold ;
+}
 
 /* Títulos centralizados */
 h1, h2, h3, h4 {
@@ -220,6 +239,8 @@ h2{
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+
+
 .premiacoes h4 {
     color: #0066cc;
     margin-bottom: 10px;
@@ -229,6 +250,9 @@ h2{
     margin: 5px 0;
     padding: 5px 0;
     border-bottom: 1px solid #eee;
+
+
+    
 }
 @media (min-width: 768px) {
     .games-grid {
