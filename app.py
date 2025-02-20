@@ -1,5 +1,3 @@
-#https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena
-
 from flask import Flask, render_template, jsonify, request
 import random
 import os
@@ -12,13 +10,16 @@ import logging
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG)
 
+# APIs disponíveis
+# API_BASE_URL = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'  # API da Caixa
+API_BASE_URL = 'https://loteriascaixa-api.herokuapp.com/api'  # API do Heroku
+
 app = Flask(__name__)
 
 def validate_numbers(numbers):
     """
     Valida os números fornecidos pelo usuário
     """
-    # Código existente de validação permanece o mesmo
     numbers = [int(n) for n in numbers if n]
     
     if len(numbers) != 18:
@@ -82,22 +83,34 @@ def create_games_from_original(original_games):
         additional_games.append(game)
     
     return additional_games
-    
+
 def get_latest_result():
     """
-    Busca o último resultado da Mega Sena via nova API da Caixa
+    Busca o último resultado da Mega Sena via API configurada
     """
     try:
-        response = requests.get('https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena')
+        response = requests.get(f'{API_BASE_URL}/megasena/latest')
         data = response.json()
-        return {
-            'concurso': data['numero'],
-            'data': data['dataApuracao'], 
-            'dezenas': data['listaDezenas'],
-            'premiacoes': data['listaRateioPremio']
-        }
-    except:
+        
+        # Adaptação do formato de resposta dependendo da API
+        if 'concurso' in data:  # Formato Heroku API
+            return {
+                'concurso': data['concurso'],
+                'data': data['data'],
+                'dezenas': data['dezenas'],
+                'premiacoes': data.get('premiacoes', [])
+            }
+        else:  # Formato API Caixa
+            return {
+                'concurso': data['numero'],
+                'data': data['dataApuracao'],
+                'dezenas': data['listaDezenas'],
+                'premiacoes': data['listaRateioPremio']
+            }
+    except Exception as e:
+        logging.error(f"Erro ao buscar resultado: {str(e)}")
         return None
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -142,19 +155,20 @@ def generate_games():
 @app.route('/check_result/<int:concurso>', methods=['GET'])
 def check_result(concurso):
     """
-    Busca o resultado de um concurso específico usando a API da Caixa
+    Busca o resultado de um concurso específico usando a API configurada
     """
     try:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
         
-        # Se concurso for 0, busca o último resultado
-        url = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'
+        # Construir URL baseada na API configurada
         if concurso > 0:
-            url = f'{url}/{concurso}'
+            url = f'{API_BASE_URL}/megasena/{concurso}'
+        else:
+            url = f'{API_BASE_URL}/megasena/latest'
             
-        print(f"Acessando URL: {url}")
+        logging.debug(f"Acessando URL: {url}")
         
         response = requests.get(url, headers=headers, timeout=10)
         
@@ -165,35 +179,47 @@ def check_result(concurso):
             
         data = response.json()
         
-        # Retorna os dados mantendo a estrutura original da API
-        resultado = {
-            'numero': data['numero'],
-            'dataApuracao': data['dataApuracao'],
-            'listaDezenas': data['listaDezenas'],
-            'dezenasSorteadasOrdemSorteio': data['dezenasSorteadasOrdemSorteio'],
-            'listaRateioPremio': data['listaRateioPremio'],
-            'acumulado': data['acumulado'],
-            'valorAcumuladoProximoConcurso': data['valorAcumuladoProximoConcurso'],
-            'dataProximoConcurso': data['dataProximoConcurso'],
-            'valorEstimadoProximoConcurso': data['valorEstimadoProximoConcurso'],
-            'valorArrecadado': data['valorArrecadado'],
-            'localSorteio': data['localSorteio'],
-            'nomeMunicipioUFSorteio': data['nomeMunicipioUFSorteio']
-        }
+        # Adaptação do formato de resposta dependendo da API
+        if 'concurso' in data:  # Formato Heroku API
+            resultado = {
+                'numero': data['concurso'],
+                'dataApuracao': data['data'],
+                'listaDezenas': data['dezenas'],
+                'dezenasSorteadasOrdemSorteio': data['dezenas'],
+                'listaRateioPremio': data.get('premiacoes', []),
+                'acumulado': data.get('acumulado', False),
+                'valorAcumuladoProximoConcurso': data.get('valorAcumulado', 0),
+                'dataProximoConcurso': data.get('dataProximo', ''),
+                'valorEstimadoProximoConcurso': data.get('valorEstimado', 0),
+                'valorArrecadado': data.get('arrecadacaoTotal', 0),
+                'localSorteio': data.get('local', ''),
+                'nomeMunicipioUFSorteio': data.get('cidade', '')
+            }
+        else:  # Formato API Caixa
+            resultado = {
+                'numero': data['numero'],
+                'dataApuracao': data['dataApuracao'],
+                'listaDezenas': data['listaDezenas'],
+                'dezenasSorteadasOrdemSorteio': data['dezenasSorteadasOrdemSorteio'],
+                'listaRateioPremio': data['listaRateioPremio'],
+                'acumulado': data['acumulado'],
+                'valorAcumuladoProximoConcurso': data['valorAcumuladoProximoConcurso'],
+                'dataProximoConcurso': data['dataProximoConcurso'],
+                'valorEstimadoProximoConcurso': data['valorEstimadoProximoConcurso'],
+                'valorArrecadado': data['valorArrecadado'],
+                'localSorteio': data['localSorteio'],
+                'nomeMunicipioUFSorteio': data['nomeMunicipioUFSorteio']
+            }
         
         return jsonify(resultado)
         
     except requests.exceptions.Timeout:
         return jsonify({'error': 'Timeout ao acessar API'}), 504
-        
     except requests.exceptions.RequestException as e:
         return jsonify({'error': f'Erro na requisição: {str(e)}'}), 500
-        
     except Exception as e:
         return jsonify({'error': f'Erro inesperado: {str(e)}'}), 500
 
-
-        
 @app.route('/export/<format>', methods=['POST'])
 def export_games(format):
     """
