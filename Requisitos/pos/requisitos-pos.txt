@@ -1,53 +1,298 @@
-Flask==3.1.0
-requests==2.32.3
-pandas==2.2.3
-openpyxl==3.1.5
+preciso que vc ajuste as informações no front end conforme vem da api...
 
-#blinker==1.9.0
-#cffi==1.17.0
-#click==8.1.8
-#colorama==0.4.6
-#greenlet==0.4.13
-#hpy==0.9.0
-#itsdangerous==2.2.0
-#Jinja2==3.1.5
-#MarkupSafe==3.0.2
-#readline==6.2.4.1
-#Werkzeug==3.1.3
+vou trazer aqui as informações das duas.. 
 
-#pip install requests pandas openpyxl
+////////////INFORMAÇÕES MOSTRADA NO FRONTEND///////////////////////
+Seus Jogos
+Resultado do Concurso: 1
 
+Data do Sorteio: 11/03/1996
 
+Local: Auditório em Brasília, DF -
+Números por Ordem de Sorteio:
+04 05 30 33 41 52
+Números em Ordem Crescente:
+04 05 30 33 41 52
+Premiações:
+undefined undefined ganhadores R$ 0,00
+undefined undefined ganhadores R$ 39.158,92
+undefined undefined ganhadores R$ 330,21
+Informações Adicionais:
 
-# blinker==1.9.0
-# click==8.1.8
-# colorama==0.4.6
-# Flask==3.1.0
-# itsdangerous==2.2.0
-# Jinja2==3.1.5
-# MarkupSafe==3.0.2
-# Werkzeug==3.1.3
+Valor Arrecadado: R$ 0,00
+////////////INFORMAÇÕES MOSTRADA NO FRONTEND///////////////////////
 
 
-Diretório: H:\Meu Drive\ProjetosPython\Loterias\Estrategias\PalpitesMegaSena
+API - 1 - https://loteriascaixa-api.herokuapp.com/api/megasena/1
+1	
+loteria	"megasena"
+concurso	2829
+data	"15/02/2025"
+local	"ESPAÇO DA SORTE em SÃO PAULO, SP"
+dezenasOrdemSorteio	
+0	"46"
+1	"38"
+2	"13"
+3	"56"
+4	"22"
+5	"51"
+dezenas	
+0	"13"
+1	"22"
+2	"38"
+3	"46"
+4	"51"
+5	"56"
+trevos	[]
+timeCoracao	null
+mesSorte	null
+premiacoes	
+0	
+descricao	"6 acertos"
+faixa	1
+ganhadores	0
+valorPremio	0.0JS:0
+1	
+descricao	"5 acertos"
+faixa	2
+ganhadores	90
+valorPremio	52384.82
+2	
+descricao	"4 acertos"
+faixa	3
+ganhadores	6377
+valorPremio	1056.16
+estadosPremiados	[]
+observacao	""
+acumulou	true
+proximoConcurso	2830
+dataProximoConcurso	"18/02/2025"
+localGanhadores	[]
+valorArrecadado	8.095084E7JS:80950840
+valorAcumuladoConcurso_0_5	8.18228093E7JS:81822809.3
+valorAcumuladoConcursoEspecial	1.299236218E7JS:12992362.18
+valorAcumuladoProximoConcurso	8.18228093E7JS:81822809.3
+valorEstimadoProximoConcurso	9.0E7JS:90000000
+
+
+
+API - 2  - https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena/1
+acumulado	true
+dataApuracao	"11/03/1996"
+dataProximoConcurso	""
+dezenasSorteadasOrdemSorteio	
+0	"41"
+1	"05"
+2	"04"
+3	"52"
+4	"30"
+5	"33"
+exibirDetalhamentoPorCidade	true
+id	null
+indicadorConcursoEspecial	1
+listaDezenas	
+0	"04"
+1	"05"
+2	"30"
+3	"33"
+4	"41"
+5	"52"
+listaDezenasSegundoSorteio	null
+listaMunicipioUFGanhadores	[]
+listaRateioPremio	
+0	
+descricaoFaixa	"6 acertos"
+faixa	1
+numeroDeGanhadores	0
+valorPremio	0.0JS:0
+1	
+descricaoFaixa	"5 acertos"
+faixa	2
+numeroDeGanhadores	17
+valorPremio	39158.92
+2	
+descricaoFaixa	"4 acertos"
+faixa	3
+numeroDeGanhadores	2016
+valorPremio	330.21
+listaResultadoEquipeEsportiva	null
+localSorteio	"Auditório"
+nomeMunicipioUFSorteio	"Brasília, DF"
+nomeTimeCoracaoMesSorte	""
+numero	1
+numeroConcursoAnterior	0
+numeroConcursoFinal_0_5	5
+numeroConcursoProximo	2
+numeroJogo	2
+observacao	""
+premiacaoContingencia	null
+tipoJogo	"MEGA_SENA"
+tipoPublicacao	3
+ultimoConcurso	true
+valorArrecadado	0.0JS:0
+valorAcumuladoConcurso_0_5	0.0JS:0
+valorAcumuladoConcursoEspecial	0.0JS:0
+valorAcumuladoProximoConcurso	1714650.23
+valorEstimadoProximoConcurso	0.0JS:0
+valorSaldoReservaGarantidora	0.0JS:0
+valorTotalPremioFaixaUm	0.0JS:0
+
+
+
+Diretório: J:\Meu DrIve\ProjetosPython\LoterIas\Estrategias\MegaSena\PalpitesMegaSena
 
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
-d-----        08/02/2025     10:44                .git
-d-----        08/02/2025     10:44                Requisitos
-d-----        08/02/2025     10:44                static
-d-----        08/02/2025     10:44                templates
-d-----        08/02/2025     10:47                venv
-d-----        08/02/2025     10:52                venv-pypy
-d-----        08/02/2025     11:02                venv-python
-------        06/02/2025     17:32           6352 app.py
-------        30/01/2025     13:39           1096 LICENSE
-------        30/01/2025     14:27            932 PalpitesMegaSena.ps1
-------        30/01/2025     13:39             18 README.md
-------        06/02/2025     18:24            912 requirements-cpython.txt
-------        06/02/2025     18:24            912 requirements-pypy.txt
-------        06/02/2025     18:21            912 requirements.txt
+d-----        20/02/2025     07:30                Requisitos
+d-----        20/02/2025     07:30                static
+d-----        20/02/2025     10:08                templates
+d-----        20/02/2025     07:31                venv-pypy
+d-----        20/02/2025     08:05                venv
+------        20/02/2025     07:30             92 .hintrc
+------        20/02/2025     07:30           1096 LICENSE
+------        20/02/2025     07:30            932 PalpitesMegaSena.ps1
+------        20/02/2025     07:30             18 README.md
+------        20/02/2025     07:30           8446 app-proxy.py
+------        20/02/2025     09:13           9967 app.py
+------        20/02/2025     07:30           4886 requirements-cpython.txt
+------        20/02/2025     07:30           4886 requirements-pypy.txt
+------        20/02/2025     07:30           5040 requirements.txt
+
+
+# Flask==3.1.0
+# requests==2.32.3
+# pandas==2.2.3
+# openpyxl==3.1.5
+aiohappyeyeballs>=2.4.4
+aiohttp>=3.11.11
+aiosignal>=1.3.2
+annotated-types>=0.7.0
+anyio>=4.4.0
+app>=0.0.1
+argon2-cffi>=23.1.0
+argon2-cffi-bindings>=21.2.0
+arrow>=1.3.0
+asttokens>=2.4.1
+async-lru>=2.0.4
+asyncio>=3.4.3
+attrs>=23.2.0
+Babel>=2.15.0
+beautifulsoup4>=4.12.3
+bleach>=6.1.0
+blinker>=1.9.0
+build>=1.2.2.post1
+certifi>=2024.7.4
+charset-normalizer>=3.4.1
+click>=8.1.7
+colorama>=0.4.6
+comm>=0.2.2
+Cython>=3.0.11
+decorator>=5.1.1
+defusedxml>=0.7.1
+et_xmlfile>=2.0.0
+executing>=2.0.1
+fastapi>=0.115.6
+fastjsonschema>=2.20.0
+Flask>=2.0.1
+Flask-Cors>=5.0.0
+Flask-Login>=0.6.3
+Flask-Mail>=0.10.0
+Flask-SQLAlchemy>=3.1.1
+fqdn>=1.5.1
+frozenlist>=1.5.0
+h11>=0.14.0
+httpcore>=1.0.5
+httpx>=0.27.0
+idna>=3.7
+ipykernel>=6.29.5
+ipython>=8.26.0
+isoduration>=20.11.0
+itsdangerous>=2.2.0
+jedi>=0.19.1
+Jinja2>=3.1.4
+json5>=0.9.25
+jsonpointer>=3.0.0
+jsonschema>=4.23.0
+jsonschema-specifications>=2023.12.1
+jupyter-events>=0.10.0
+jupyter-lsp>=2.2.5
+jupyter_client>=8.6.2
+jupyter_core>=5.7.2
+jupyter_server>=2.14.2
+jupyter_server_terminals>=0.5.3
+jupyterlab>=4.2.4
+jupyterlab_pygments>=0.3.0
+jupyterlab_server>=2.27.3
+MarkupSafe>=3.0.2
+matplotlib-inline>=0.1.7
+mistune>=3.0.2
+mpmath>=1.3.0
+multidict>=6.1.0
+nbclient>=0.10.0
+nbconvert>=7.16.4
+nbformat>=5.10.4
+nest-asyncio>=1.6.0
+notebook>=7.2.1
+notebook_shim>=0.2.4
+numpy>=2.2.1
+openpyxl>=3.1.5
+overrides>=7.7.0
+packaging>=24.1
+pandas>=2.2.3
+pandocfilters>=1.5.1
+parso>=0.8.4
+pip-tools>=7.4.1
+platformdirs>=4.2.2
+prometheus_client>=0.20.0
+prompt_toolkit>=3.0.47
+propcache>=0.2.1
+psutil>=6.0.0
+pure-eval>=0.2.2
+pycparser>=2.22
+pydantic>=2.10.4
+pydantic_core>=2.27.2
+Pygments>=2.18.0
+pyproject_hooks>=1.2.0
+python-dateutil>=2.9.0.post0
+python-dotenv>=0.19.0
+python-json-logger>=2.0.7
+python-multipart>=0.0.20
+pytz>=2024.1
+#pywin32>=308
+redis>=5.2.1
+referencing>=0.35.1
+requests>=2.31.0
+rfc3339-validator>=0.1.4
+rfc3986-validator>=0.1.1
+Send2Trash>=1.8.3
+setuptools>=75.8.0
+six>=1.16.0
+sniffio>=1.3.1
+soupsieve>=2.5
+SQLAlchemy>=2.0.36
+stack-data>=0.6.3
+starlette>=0.41.3
+sympy>=1.13.1
+terminado>=0.18.1
+tinycss2>=1.3.0
+tornado>=6.4.1
+traitlets>=5.14.3
+types-python-dateutil>=2.9.0.20240316
+typing_extensions>=4.12.2
+tzdata>=2024.1
+uri-template>=1.3.0
+urllib3>=2.2.2
+wcwidth>=0.2.13
+webcolors>=24.6.0
+webencodings>=0.5.1
+websocket-client>=1.8.0
+Werkzeug>=2.0.3
+wheel>=0.45.1
+yarl>=1.18.3
+
+
+
 
 from flask import Flask, render_template, jsonify, request
 import random
@@ -56,6 +301,14 @@ import requests
 import pandas as pd
 import openpyxl
 from datetime import datetime
+import logging
+
+# Configurar logging
+logging.basicConfig(level=logging.DEBUG)
+
+# APIs disponíveis
+# API_BASE_URL = 'https://servicebus2.caixa.gov.br/portaldeloterias/api/megasena'  # API da Caixa
+API_BASE_URL = 'https://loteriascaixa-api.herokuapp.com/api'  # API do Heroku
 
 app = Flask(__name__)
 
@@ -63,7 +316,6 @@ def validate_numbers(numbers):
     """
     Valida os números fornecidos pelo usuário
     """
-    # Código existente de validação permanece o mesmo
     numbers = [int(n) for n in numbers if n]
     
     if len(numbers) != 18:
@@ -130,12 +382,29 @@ def create_games_from_original(original_games):
 
 def get_latest_result():
     """
-    Busca o último resultado da Mega Sena via API
+    Busca o último resultado da Mega Sena via API configurada
     """
     try:
-        response = requests.get('https://loteriascaixa-api.herokuapp.com/api/megasena/latest')
-        return response.json()
-    except:
+        response = requests.get(f'{API_BASE_URL}/megasena/latest')
+        data = response.json()
+        
+        # Adaptação do formato de resposta dependendo da API
+        if 'concurso' in data:  # Formato Heroku API
+            return {
+                'concurso': data['concurso'],
+                'data': data['data'],
+                'dezenas': data['dezenas'],
+                'premiacoes': data.get('premiacoes', [])
+            }
+        else:  # Formato API Caixa
+            return {
+                'concurso': data['numero'],
+                'data': data['dataApuracao'],
+                'dezenas': data['listaDezenas'],
+                'premiacoes': data['listaRateioPremio']
+            }
+    except Exception as e:
+        logging.error(f"Erro ao buscar resultado: {str(e)}")
         return None
 
 @app.route('/')
@@ -182,13 +451,70 @@ def generate_games():
 @app.route('/check_result/<int:concurso>', methods=['GET'])
 def check_result(concurso):
     """
-    Busca o resultado de um concurso específico
+    Busca o resultado de um concurso específico usando a API configurada
     """
     try:
-        response = requests.get(f'https://loteriascaixa-api.herokuapp.com/api/megasena/{concurso}')
-        return jsonify(response.json())
-    except:
-        return jsonify({'error': 'Concurso não encontrado'}), 404
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        
+        # Construir URL baseada na API configurada
+        if concurso > 0:
+            url = f'{API_BASE_URL}/megasena/{concurso}'
+        else:
+            url = f'{API_BASE_URL}/megasena/latest'
+            
+        logging.debug(f"Acessando URL: {url}")
+        
+        response = requests.get(url, headers=headers, timeout=10)
+        
+        if response.status_code != 200:
+            return jsonify({
+                'error': f'Erro ao acessar API (Status {response.status_code})'
+            }), response.status_code
+            
+        data = response.json()
+        
+        # Adaptação do formato de resposta dependendo da API
+        if 'concurso' in data:  # Formato Heroku API
+            resultado = {
+                'numero': data['concurso'],
+                'dataApuracao': data['data'],
+                'listaDezenas': data['dezenas'],
+                'dezenasSorteadasOrdemSorteio': data['dezenas'],
+                'listaRateioPremio': data.get('premiacoes', []),
+                'acumulado': data.get('acumulado', False),
+                'valorAcumuladoProximoConcurso': data.get('valorAcumulado', 0),
+                'dataProximoConcurso': data.get('dataProximo', ''),
+                'valorEstimadoProximoConcurso': data.get('valorEstimado', 0),
+                'valorArrecadado': data.get('arrecadacaoTotal', 0),
+                'localSorteio': data.get('local', ''),
+                'nomeMunicipioUFSorteio': data.get('cidade', '')
+            }
+        else:  # Formato API Caixa
+            resultado = {
+                'numero': data['numero'],
+                'dataApuracao': data['dataApuracao'],
+                'listaDezenas': data['listaDezenas'],
+                'dezenasSorteadasOrdemSorteio': data['dezenasSorteadasOrdemSorteio'],
+                'listaRateioPremio': data['listaRateioPremio'],
+                'acumulado': data['acumulado'],
+                'valorAcumuladoProximoConcurso': data['valorAcumuladoProximoConcurso'],
+                'dataProximoConcurso': data['dataProximoConcurso'],
+                'valorEstimadoProximoConcurso': data['valorEstimadoProximoConcurso'],
+                'valorArrecadado': data['valorArrecadado'],
+                'localSorteio': data['localSorteio'],
+                'nomeMunicipioUFSorteio': data['nomeMunicipioUFSorteio']
+            }
+        
+        return jsonify(resultado)
+        
+    except requests.exceptions.Timeout:
+        return jsonify({'error': 'Timeout ao acessar API'}), 504
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Erro na requisição: {str(e)}'}), 500
+    except Exception as e:
+        return jsonify({'error': f'Erro inesperado: {str(e)}'}), 500
 
 @app.route('/export/<format>', methods=['POST'])
 def export_games(format):
@@ -254,7 +580,122 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 	
-	// Create input fields
+	<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palpites Mega Sena</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerador de Palpites - Mega Sena</h1>
+        
+        <div class="instrucaoes">
+            <h1>Como usar:</h1>
+            <ol> 
+                    <li>Digite 18 números únicos entre 01 e 60</li>
+                    <li>Os números serão validados automaticamente.</li>
+                    <li>Após preencher O ULTIMO número, serão geradas as combinações:</li>
+                    <li><span class="jogos-normais">Jogos Normais</span> <small><i>(seus números divididos em 3 jogos)</i></small></li>
+                    <li><span class="jogos-mais-um">Jogos +1</span> <small><i>(cada número aumentado em uma unidade)</i></small></li>
+                    <li><span class="jogos-menos-um">Jogos -1</span> <small><i>(cada número diminuído em uma unidade)</i></small></li>
+                    <li><span class="jogos-aleatorios">Jogos Aleatórios</span> <small><i>(6 jogos baseados nas variações)</i></small></li>
+                    <li>Você pode fazer o download dos jogos.</li>
+                    <li>As dezenas que vc acertar podem serem destacadas caso vc insira o numero do concurso.</li>
+                    <li>Vc pode conferir os três palpites <a href="https://palpitesms.onrender.com"  target="_blank">aqui</a>.</li>
+            </ol>
+        </div>
+        <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
+
+        <div class="input-section">
+            <h1>Digite 18 números <span><small>(01-60)</small></span>:</h1>
+            <div class="number-inputs"></div>
+        </div>
+
+        <!--Adicione isto antes da div .results:-->
+        <div class="concurso-checker">
+            <input type="number" id="concurso-input" placeholder="Concurso" min="1">
+            <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
+                Verificar Concurso
+            </button>
+        </div>
+
+
+        <div class="results" style="display: none;">
+            <h1>Seus Jogos</h1>
+			
+			
+			<!-- Nova div para mostrar o resultado do sorteio -->
+			<div class="sorteio-info" style="display: none;">
+				<h3>Resultado do Concurso: <span id="concurso-numero"></span></h3>
+				<div class="numeros-sorteados">
+					<span>Números Sorteados:</span>
+					<div id="dezenas-sorteadas" class="dezenas"></div>
+				</div>
+			</div>	
+			
+            
+            <div class="games-section">
+                <h3>Jogos Normais</h3>
+                <div id="original-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: green;">+1</span></h3>
+                <div id="plus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
+                <div id="minus-one-games" class="games-grid"></div>
+            </div>
+
+            <div class="games-section">
+                <h3>Jogos Aleatórios</h3>
+                <div id="random-games" class="games-grid"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button onclick="exportToTxt()">Exportar para TXT</button>
+                <button onclick="exportToExcel()">Exportar para Excel</button>
+                <!--Adicione isto na div .export-buttons:-->
+                <button onclick="exportToFormat('html')">Exportar para HTML</button>
+                 <!--<button onclick="exportToFormat('txt')">Exportar TXT</button>-->
+            </div>
+
+
+
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
+
+// Carrega o último resultado automaticamente ao iniciar
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/check_result/0'); // 0 para pegar o último resultado
+        const data = await response.json();
+        
+        if (data && !data.error) {
+            const concurso = data.concurso;
+            const dezenas = data.dezenas.map(d => parseInt(d, 10));
+            
+            // Preenche o input com o número do último concurso
+            const input = document.getElementById('concurso-input');
+            if (input) input.value = concurso;
+            
+            // Atualiza a interface com o resultado
+            atualizarResultadoSorteio(data);
+            highlightNumbers(dezenas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar último resultado:', error);
+    }
+});
+// Create input fields
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.number-inputs');
     for (let i = 0; i < 18; i++) {
@@ -544,44 +985,162 @@ function downloadFile(content, filename, type) {
     window.URL.revokeObjectURL(url);
 }
 
-// Função para verificar resultado específico - Versão corrigida
+// Função para verificar resultado específico
 async function checkConcurso(numero) {
-	
-	// Adicione no início da função checkConcurso
-	console.log('Verificando concurso:', numero);
-	console.log('Response:', data);
-	console.log('Dezenas convertidas:', dezenasSorteadas);
-		
-    try {
-        // Mostra a seção de resultado antes da requisição
-        const sorteioInfo = document.querySelector('.sorteio-info');
-        sorteioInfo.style.display = 'block';
+    console.log('Verificando concurso:', numero);
+    
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    sorteioInfo.style.display = 'block';
+    sorteioInfo.innerHTML = `
+        <div class="loading">
+            <p>Carregando resultado do concurso ${numero}...</p>
+        </div>
+    `;
 
+    try {
         const response = await fetch(`/check_result/${numero}`);
-        const data = await response.json();
+        console.log('Status da resposta:', response.status);
         
-        if (data && data.dezenas) {
-            // Garante que as dezenas são números
-            const dezenasSorteadas = data.dezenas.map(d => parseInt(d, 10));
-            
-            // Atualiza a interface com o resultado
-            atualizarResultadoSorteio(numero, dezenasSorteadas);
-            
-            // Aplica o destaque
-            highlightNumbers(dezenasSorteadas);
-            
-            // Log para debug
-            console.log('Dezenas sorteadas:', dezenasSorteadas);
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log('Dados recebidos:', data);
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Atualiza a interface
+        atualizarResultadoSorteio(data);
+        
+        // Aplica destaque nos números
+        if (data.listaDezenas) {
+            const dezenasSorteadas = data.listaDezenas.map(d => parseInt(d, 10));
+            highlightNumbers(dezenasSorteadas);
+        }
+
     } catch (error) {
-        console.error('Erro ao verificar concurso:', error);
-        // Mostra mensagem de erro para o usuário
-        alert('Erro ao verificar o concurso. Tente novamente.');
+        console.error('Erro:', error);
+        sorteioInfo.innerHTML = `
+            <div class="error-message">
+                <p>Não foi possível carregar o resultado do concurso ${numero}</p>
+                <p>Erro: ${error.message}</p>
+                <button onclick="checkConcurso(${numero})" class="retry-button">
+                    Tentar Novamente
+                </button>
+            </div>
+        `;
     }
 }
 
-// Função para destacar números - Versão melhorada
+// Função para atualizar o resultado do sorteio
+function atualizarResultadoSorteio(data) {
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    
+    // Formata valores monetários
+    const formatMoney = (value) => {
+        return value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    };
+
+    // Template com todas as informações
+    sorteioInfo.innerHTML = `
+        <div class="resultado-container">
+            <h3>Resultado do Concurso: ${data.numero}</h3>
+            <p class="data-sorteio">Data do Sorteio: ${data.dataApuracao}</p>
+            <p class="local-sorteio">Local: ${data.localSorteio} - ${data.nomeMunicipioUFSorteio}</p>
+            
+            <div class="numeros-sorteados">
+                <h4>Números por Ordem de Sorteio:</h4>
+                <div class="dezenas">
+                    ${data.dezenasSorteadasOrdemSorteio.map(num => 
+                        `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
+                    ).join('')}
+                </div>
+                
+                <h4>Números em Ordem Crescente:</h4>
+                <div class="dezenas">
+                    ${data.listaDezenas.map(num => 
+                        `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
+                    ).join('')}
+                </div>
+            </div>
+            
+            <div class="premiacoes">
+                <h4>Premiações:</h4>
+                ${data.listaRateioPremio.map(premio => `
+                    <div class="premio-item">
+                        <span class="faixa">${premio.descricaoFaixa}</span>
+                        <span class="ganhadores">${premio.numeroDeGanhadores} 
+                            ${premio.numeroDeGanhadores === 1 ? 'ganhador' : 'ganhadores'}</span>
+                        <span class="valor">${formatMoney(premio.valorPremio)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <div class="arrecadacao">
+                <h4>Informações Adicionais:</h4>
+                <p>Valor Arrecadado: ${formatMoney(data.valorArrecadado)}</p>
+            </div>
+            
+            <div class="proximo-concurso">
+                <h4>Próximo Concurso:</h4>
+                ${data.dataProximoConcurso ? 
+                    `<p>Data: ${data.dataProximoConcurso}</p>` : ''}
+                ${data.acumulado ? 
+                    `<p class="acumulado">ACUMULOU!</p>
+                     <p>Valor Acumulado: ${formatMoney(data.valorAcumuladoProximoConcurso)}</p>` : 
+                    ''}
+                ${data.valorEstimadoProximoConcurso > 0 ?
+                    `<p>Prêmio Estimado: ${formatMoney(data.valorEstimadoProximoConcurso)}</p>` : 
+                    ''}
+            </div>
+        </div>
+    `;
+}
+
+// Função para destacar números nos jogos
 function highlightNumbers(dezenasSorteadas) {
+    console.log('Destacando números:', dezenasSorteadas);
+    
+    if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
+        console.error('Dezenas inválidas:', dezenasSorteadas);
+        return;
+    }
+
+    // Remove destaques anteriores
+    document.querySelectorAll('.number-highlight').forEach(span => {
+        const text = span.textContent;
+        span.replaceWith(text);
+    });
+
+    // Destaca os números em todos os jogos
+    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
+        const numbersText = gameDiv.textContent;
+        const numbers = numbersText.split(' ').map(n => n.trim());
+        
+        const newContent = numbers.map(num => {
+            const number = parseInt(num, 10);
+            if (dezenasSorteadas.includes(number)) {
+                return `<span class="number-highlight">${num}</span>`;
+            }
+            return num;
+        }).join(' ');
+        
+        gameDiv.innerHTML = newContent;
+    });
+}
+
+
+
+// Função para destacar números
+function highlightNumbers(dezenasSorteadas) {
+    console.log('Destacando números:', dezenasSorteadas);
+    
     if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
         console.error('Dezenas inválidas:', dezenasSorteadas);
         return;
@@ -610,65 +1169,6 @@ function highlightNumbers(dezenasSorteadas) {
         gameDiv.innerHTML = newContent;
     });
 }
-
-// Função para atualizar resultado do sorteio - Versão melhorada
-function atualizarResultadoSorteio(concurso, dezenas) {
-    const sorteioInfo = document.querySelector('.sorteio-info');
-    const concursoNumero = document.getElementById('concurso-numero');
-    const dezenasDiv = document.getElementById('dezenas-sorteadas');
-    
-    if (!sorteioInfo || !concursoNumero || !dezenasDiv) {
-        console.error('Elementos da interface não encontrados');
-        return;
-    }
-    
-    // Atualiza o número do concurso
-    concursoNumero.textContent = concurso;
-    
-    // Atualiza as dezenas sorteadas
-    dezenasDiv.innerHTML = dezenas
-        .map(num => `<div class="dezena">${num.toString().padStart(2, '0')}</div>`)
-        .join('');
-    
-    // Mostra a seção de informações do sorteio
-    sorteioInfo.style.display = 'block';
-}
-
-// Adicione isso no início do seu arquivo para verificação automática
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Tenta obter o último resultado
-        const response = await fetch('/generate_games', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ numbers: [] }) // Envia array vazio para apenas obter o último resultado
-        });
-
-        const data = await response.json();
-        
-        if (data.latest_result) {
-            const concurso = data.latest_result.concurso;
-            const dezenas = data.latest_result.dezenas.map(d => parseInt(d, 10));
-            
-            // Preenche o input com o número do último concurso
-            const input = document.getElementById('concurso-input');
-            if (input) input.value = concurso;
-            
-            // Atualiza a interface com o resultado
-            atualizarResultadoSorteio(concurso, dezenas);
-            highlightNumbers(dezenas);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar último resultado:', error);
-    }
-});
-
-
-
-
-
 // Funções de exportação
 async function exportToFormat(format) {
     const games = {
@@ -722,95 +1222,7 @@ function getGamesFromContainer(containerId) {
     return Array.from(container.querySelectorAll('.game-numbers'))
         .map(div => div.textContent.split(' ').map(Number));
 }
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palpites Mega Sena</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Gerador de Palpites - Mega Sena</h1>
-        
-        <div class="instrucaoes">
-            <h1>Como usar:</h1>
-            <p>1. Digite 18 números únicos entre 01 e 60</p>
-            <p>2. Os números serão validados automaticamente.</p>
-            <p>3. Após preencher todos os números, serão geradas as combinações:</p>
-            <ul>
-                <li>Jogos Normais (seus números divididos em 3 jogos)</li>
-                <li>Jogos +1 (cada número aumentado em uma unidade)</li>
-                <li>Jogos -1 (cada número diminuído em uma unidade)</li>
-                <li>Jogos Aleatórios (4 jogos baseados nas variações)</li>
-            </ul>
-        </div>
-        <h2>Para apostar use os jogos gerados na sessão (Jogos Aleatórios)</h2>
 
-        <div class="input-section">
-            <h1>Digite 18 números <span><small>(01-60)</small></span>:</h1>
-            <div class="number-inputs"></div>
-        </div>
-
-        <!--Adicione isto antes da div .results:-->
-        <div class="concurso-checker">
-            <input type="number" id="concurso-input" placeholder="Concurso" min="1">
-            <button onclick="checkConcurso(document.getElementById('concurso-input').value)">
-                Verificar Concurso
-            </button>
-        </div>
-
-
-        <div class="results" style="display: none;">
-            <h1>Seus Jogos</h1>
-			
-			
-			<!-- Nova div para mostrar o resultado do sorteio -->
-			<div class="sorteio-info" style="display: none;">
-				<h3>Resultado do Concurso: <span id="concurso-numero"></span></h3>
-				<div class="numeros-sorteados">
-					<span>Números Sorteados:</span>
-					<div id="dezenas-sorteadas" class="dezenas"></div>
-				</div>
-			</div>	
-			
-            
-            <div class="games-section">
-                <h3>Jogos Normais</h3>
-                <div id="original-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos <span style="color: green;">+1</span></h3>
-                <div id="plus-one-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos <span style="color: #cc6600;">-1</span></h3>
-                <div id="minus-one-games" class="games-grid"></div>
-            </div>
-
-            <div class="games-section">
-                <h3>Jogos Aleatórios</h3>
-                <div id="random-games" class="games-grid"></div>
-            </div>
-
-            <div class="export-buttons">
-                <button onclick="exportToTxt()">Exportar para TXT</button>
-                <button onclick="exportToExcel()">Exportar para Excel</button>
-                <!--Adicione isto na div .export-buttons:-->
-                <button onclick="exportToFormat('html')">Exportar HTML</button>
-                <button onclick="exportToFormat('txt')">Exportar TXT</button>
-            </div>
-
-
-
-        </div>
-    </div>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-</body>
-</html>
 /* Reset e configurações base */
 * {
     box-sizing: border-box;
@@ -834,6 +1246,25 @@ body {
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.jogos-normais {
+    color: #008000;
+    font-weight: bold ;
+}
+
+.jogos-mais-um {
+    color: #cc6600;
+    font-weight: bold ;
+}
+
+.jogos-menos-um {
+    color: #0066cc;
+    font-weight: bold ;
+}
+
+.jogos-aleatorios {
+    color: #000000;
+    font-weight: bold ;
 }
 
 /* Títulos centralizados */
@@ -994,10 +1425,10 @@ h2{
 /* Estilos para a seção de resultado do sorteio */
 .sorteio-info {
     background-color: #f8f9fa;
-    padding: 15px;
+    padding: 20px;
     border-radius: 8px;
-    margin: 10px 0 20px 0;
-    text-align: center;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .numeros-sorteados {
@@ -1006,10 +1437,10 @@ h2{
 
 .dezenas {
     display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
     flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
 }
 
 .dezena {
@@ -1023,8 +1454,31 @@ h2{
     justify-content: center;
     font-weight: bold;
     font-size: 1.2em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.premiacoes {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
+
+
+.premiacoes h4 {
+    color: #0066cc;
+    margin-bottom: 10px;
+}
+
+.premiacoes p {
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+
+
+    
+}
 @media (min-width: 768px) {
     .games-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1081,10 +1535,12 @@ button:hover {
 
 /* Mensagens de erro */
 .error-message {
-    color: #ff0000;
-    font-size: 14px;
-    text-align: center;
-    margin: 5px 0;
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 10px 0;
 }
 
 /* Media Query para telas muito pequenas */

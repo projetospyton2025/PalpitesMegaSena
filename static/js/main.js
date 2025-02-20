@@ -1,27 +1,8 @@
-// Carrega o último resultado automaticamente ao iniciar
+
+
+// Event Listeners de Inicialização
 document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const response = await fetch('/check_result/0'); // 0 para pegar o último resultado
-        const data = await response.json();
-        
-        if (data && !data.error) {
-            const concurso = data.concurso;
-            const dezenas = data.dezenas.map(d => parseInt(d, 10));
-            
-            // Preenche o input com o número do último concurso
-            const input = document.getElementById('concurso-input');
-            if (input) input.value = concurso;
-            
-            // Atualiza a interface com o resultado
-            atualizarResultadoSorteio(data);
-            highlightNumbers(dezenas);
-        }
-    } catch (error) {
-        console.error('Erro ao carregar último resultado:', error);
-    }
-});
-// Create input fields
-document.addEventListener('DOMContentLoaded', () => {
+    // Criar campos de input
     const container = document.querySelector('.number-inputs');
     for (let i = 0; i < 18; i++) {
         const input = document.createElement('input');
@@ -32,47 +13,54 @@ document.addEventListener('DOMContentLoaded', () => {
         input.setAttribute('data-index', i);
         container.appendChild(input);
         
-        // Add event listeners
         input.addEventListener('input', validateAndMove);
         input.addEventListener('keydown', handleBackspace);
     }
+
+    // Carregar último resultado
+    try {
+        const response = await fetch('/check_result/0');
+        const data = await response.json();
+        
+        if (data && !data.error) {
+            const concurso = data.concurso || data.numero;
+            const dezenas = (data.dezenas || data.listaDezenas || []).map(d => parseInt(d, 10));
+            
+            const input = document.getElementById('concurso-input');
+            if (input) input.value = concurso;
+            
+            atualizarResultadoSorteio(data);
+            highlightNumbers(dezenas);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar último resultado:', error);
+    }
 });
 
-// Função para formatar número com zero à esquerda
-function formatNumber(num) {
-    return num.toString().padStart(2, '0');
-}
-
-
-// Função para validar input e mover para o próximo campo
+// Funções de Validação e Input
 function validateAndMove(event) {
     const input = event.target;
-    const value = input.value.replace(/^0+/, ''); // Remove zeros à esquerda para validação
+    const value = input.value.replace(/^0+/, '');
     const numValue = parseInt(value);
     const index = parseInt(input.getAttribute('data-index'));
     
-    // Validar range (1-60)
     if (numValue < 1 || numValue > 60) {
         input.classList.add('error');
         return;
     }
 
-    // Determinar a linha atual (0, 1 ou 2)
     const linha = Math.floor(index / 6);
     const inicioLinha = linha * 6;
     const fimLinha = inicioLinha + 5;
     
-    // Pegar todos os inputs da linha atual
     const inputsDaLinha = Array.from(document.querySelectorAll('.number-input'))
         .slice(inicioLinha, fimLinha + 1);
     
-    // Pegar números preenchidos na linha atual (excluindo o input atual)
     const numerosPreenchidos = inputsDaLinha
         .filter(inp => inp.value && inp !== input)
         .map(inp => parseInt(inp.value))
         .sort((a, b) => a - b);
 
-    // Verificar se o número mantém a ordem crescente
     const menoresQueAtual = numerosPreenchidos.filter(n => n < numValue);
     const maioresQueAtual = numerosPreenchidos.filter(n => n > numValue);
     
@@ -86,7 +74,6 @@ function validateAndMove(event) {
         }
     }
 
-    // Verificar duplicatas APENAS dentro do grupo atual
     const duplicadoNoGrupo = inputsDaLinha
         .filter(i => i !== input)
         .some(i => i.value && parseInt(i.value) === numValue);
@@ -98,61 +85,22 @@ function validateAndMove(event) {
 
     input.classList.remove('error');
 
-    // Formatar com zero à esquerda quando o input perde o foco
     input.addEventListener('blur', function() {
         if (this.value && !this.classList.contains('error')) {
             this.value = this.value.padStart(2, '0');
         }
     });
 
-    // Mover para próximo input se tiver 2 dígitos
     if (input.value.length === 2 && index < 17) {
         const nextInput = document.querySelector(`[data-index="${index + 1}"]`);
         if (nextInput) nextInput.focus();
     }
 
-    // Verificar se todos os inputs estão preenchidos e válidos
     if (areAllInputsFilled()) {
         generateGames();
     }
 }
 
-// Função para verificar se todos os inputs estão preenchidos
-function areAllInputsFilled() {
-    const inputs = document.querySelectorAll('.number-input');
-    return Array.from(inputs).every(input => 
-        input.value && !input.classList.contains('error'));
-}
-
-// Função para lidar com a tecla backspace
-function handleBackspace(event) {
-    if (event.key === 'Backspace' && !event.target.value) {
-        const index = parseInt(event.target.getAttribute('data-index'));
-        if (index > 0) {
-            const prevInput = document.querySelector(`[data-index="${index - 1}"]`);
-            prevInput.focus();
-        }
-    }
-}
-/*
-// Criar os campos de input
-document.addEventListener('DOMContentLoaded', () => {
-    const container = document.querySelector('.number-inputs');
-    for (let i = 0; i < 18; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.maxLength = 2;
-        input.className = 'number-input';
-        input.setAttribute('data-index', i);
-        container.appendChild(input);
-        
-        // Adicionar event listeners
-        input.addEventListener('input', validateAndMove);
-        input.addEventListener('keydown', handleBackspace);
-    }
-});*/
-
-// Handle backspace key
 function handleBackspace(event) {
     if (event.key === 'Backspace' && !event.target.value) {
         const index = parseInt(event.target.getAttribute('data-index'));
@@ -163,15 +111,13 @@ function handleBackspace(event) {
     }
 }
 
-// Função para verificar se todos os inputs estão preenchidos
 function areAllInputsFilled() {
     const inputs = document.querySelectorAll('.number-input');
     return Array.from(inputs).every(input => 
         input.value && !input.classList.contains('error'));
 }
 
-// Generate games
-// Modifique a função generateGames para incluir a verificação do último resultado
+// Funções de Geração e Exibição de Jogos
 async function generateGames() {
     const inputs = document.querySelectorAll('.number-input');
     const numbers = Array.from(inputs).map(input => parseInt(input.value));
@@ -179,21 +125,16 @@ async function generateGames() {
     try {
         const response = await fetch('/generate_games', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ numbers }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ numbers })
         });
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
 
         const data = await response.json();
         displayGames(data);
         document.querySelector('.results').style.display = 'block';
         
-        // Verifica o último resultado automaticamente
         if (data.latest_result) {
             highlightNumbers(data.latest_result.dezenas);
         }
@@ -202,7 +143,6 @@ async function generateGames() {
     }
 }
 
-// Display games in the UI
 function displayGames(data) {
     displayGameSet('original-games', data.original_games, 'Jogo');
     displayGameSet('plus-one-games', data.plus_one_games, 'Jogo +1');
@@ -210,7 +150,6 @@ function displayGames(data) {
     displayGameSet('random-games', data.random_games, 'Jogo Aleatório');
 }
 
-// Display a set of games
 function displayGameSet(containerId, games, prefix) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
@@ -225,92 +164,14 @@ function displayGameSet(containerId, games, prefix) {
 
         const numbers = document.createElement('div');
         numbers.className = 'game-numbers';
-        numbers.textContent = game.map(n => n.toString().padStart(2, '0')).join(' ');
+        numbers.textContent = game.map(n => String(n).padStart(2, '0')).join(' ');
 
         gameCard.appendChild(title);
         gameCard.appendChild(numbers);
         container.appendChild(gameCard);
     });
 }
-
-// Export to TXT
-function exportToTxt() {
-    let content = 'PALPITES MEGA SENA\n\n';
-
-    // Add original games
-    content += 'JOGOS NORMAIS:\n';
-    content = addGamesToContent(content, 'original-games');
-
-    // Add +1 games
-    content += '\nJOGOS +1:\n';
-    content = addGamesToContent(content, 'plus-one-games');
-
-    // Add -1 games
-    content += '\nJOGOS -1:\n';
-    content = addGamesToContent(content, 'minus-one-games');
-
-    // Add random games
-    content += '\nJOGOS ALEATÓRIOS:\n';
-    content = addGamesToContent(content, 'random-games');
-
-    // Create and trigger download
-    downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
-}
-
-// Export to Excel format (CSV)
-function exportToExcel() {
-    let content = 'PALPITES MEGA SENA\n\n';
-
-    // Add all game types
-    content += 'Jogos Normais\n';
-    content = addGamesToContent(content, 'original-games', true);
-
-    content += '\nJogos +1\n';
-    content = addGamesToContent(content, 'plus-one-games', true);
-
-    content += '\nJogos -1\n';
-    content = addGamesToContent(content, 'minus-one-games', true);
-
-    content += '\nJogos Aleatórios\n';
-    content = addGamesToContent(content, 'random-games', true);
-
-    // Create and trigger download
-    downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
-}
-
-// Helper function to add games to export content
-function addGamesToContent(content, containerId, isExcel = false) {
-    const container = document.getElementById(containerId);
-    const gameCards = container.querySelectorAll('.game-card');
-
-    gameCards.forEach(card => {
-        const numbers = card.querySelector('.game-numbers').textContent;
-        if (isExcel) {
-            // Format for Excel: separate numbers with tabs
-            content += numbers.split(' ').join('\t') + '\n';
-        } else {
-            // Format for TXT: keep space-separated
-            content += numbers + '\n';
-        }
-    });
-    
-    return content;
-}
-
-// Helper function to download file
-function downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type: type });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-}
-
-// Função para verificar resultado específico
+// Funções de Verificação de Resultado
 async function checkConcurso(numero) {
     console.log('Verificando concurso:', numero);
     
@@ -324,28 +185,15 @@ async function checkConcurso(numero) {
 
     try {
         const response = await fetch(`/check_result/${numero}`);
-        console.log('Status da resposta:', response.status);
-        
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
         const data = await response.json();
-        console.log('Dados recebidos:', data);
+        if (data.error) throw new Error(data.error);
 
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        // Atualiza a interface
         atualizarResultadoSorteio(data);
         
-        // Aplica destaque nos números
-        if (data.listaDezenas) {
-            const dezenasSorteadas = data.listaDezenas.map(d => parseInt(d, 10));
-            highlightNumbers(dezenasSorteadas);
-        }
-
+        const dezenas = data.listaDezenas || data.dezenas || [];
+        highlightNumbers(dezenas.map(d => parseInt(d, 10)));
     } catch (error) {
         console.error('Erro:', error);
         sorteioInfo.innerHTML = `
@@ -360,36 +208,51 @@ async function checkConcurso(numero) {
     }
 }
 
+
+
 // Função para atualizar o resultado do sorteio
 function atualizarResultadoSorteio(data) {
-    const sorteioInfo = document.querySelector('.sorteio-info');
-    
-    // Formata valores monetários
-    const formatMoney = (value) => {
-        return value.toLocaleString('pt-BR', {
-            style: 'currency',
-            currency: 'BRL'
-        });
-    };
+    console.log('Dados recebidos da API:', data);
 
-    // Template com todas as informações
+    // Preparação dos dados
+    let dezenasSorteio = [];
+    let dezenasOrdenadas = [];
+
+    // API do Heroku usa dezenasOrdemSorteio e dezenas
+    if (data.dezenasOrdemSorteio && data.dezenas) {
+        // Mantendo exatamente como vem da API, sem conversões
+        dezenasSorteio = Object.keys(data.dezenasOrdemSorteio).map(key => data.dezenasOrdemSorteio[key]);
+        dezenasOrdenadas = Object.keys(data.dezenas).map(key => data.dezenas[key]);
+    } 
+    // API da Caixa usa dezenasSorteadasOrdemSorteio e listaDezenas
+    else if (data.dezenasSorteadasOrdemSorteio && data.listaDezenas) {
+        dezenasSorteio = data.dezenasSorteadasOrdemSorteio;
+        dezenasOrdenadas = data.listaDezenas;
+    }
+
+    console.log('Dezenas ordem sorteio após processamento:', dezenasSorteio);
+    console.log('Dezenas ordenadas após processamento:', dezenasOrdenadas);
+
+    const sorteioInfo = document.querySelector('.sorteio-info');
+    sorteioInfo.style.display = 'block';
+    
     sorteioInfo.innerHTML = `
         <div class="resultado-container">
-            <h3>Resultado do Concurso: ${data.numero}</h3>
-            <p class="data-sorteio">Data do Sorteio: ${data.dataApuracao}</p>
-            <p class="local-sorteio">Local: ${data.localSorteio} - ${data.nomeMunicipioUFSorteio}</p>
+            <h3>Resultado do Concurso: ${data.numero || data.concurso}</h3>
+            <p class="data-sorteio">Data do Sorteio: ${formatarData(data.dataApuracao || data.data)}</p>
+            <p class="local-sorteio">Local: ${data.localSorteio || data.local || ''} ${data.nomeMunicipioUFSorteio || data.cidade || ''}</p>
             
             <div class="numeros-sorteados">
                 <h4>Números por Ordem de Sorteio:</h4>
                 <div class="dezenas">
-                    ${data.dezenasSorteadasOrdemSorteio.map(num => 
+                    ${dezenasSorteio.map(num => 
                         `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
                     ).join('')}
                 </div>
                 
                 <h4>Números em Ordem Crescente:</h4>
                 <div class="dezenas">
-                    ${data.listaDezenas.map(num => 
+                    ${dezenasOrdenadas.map(num => 
                         `<div class="dezena">${num.toString().padStart(2, '0')}</div>`
                     ).join('')}
                 </div>
@@ -397,53 +260,69 @@ function atualizarResultadoSorteio(data) {
             
             <div class="premiacoes">
                 <h4>Premiações:</h4>
-                ${data.listaRateioPremio.map(premio => `
-                    <div class="premio-item">
-                        <span class="faixa">${premio.descricaoFaixa}</span>
-                        <span class="ganhadores">${premio.numeroDeGanhadores} 
-                            ${premio.numeroDeGanhadores === 1 ? 'ganhador' : 'ganhadores'}</span>
-                        <span class="valor">${formatMoney(premio.valorPremio)}</span>
-                    </div>
-                `).join('')}
+                ${montarHtmlPremiacoes(data)}
             </div>
             
-            <div class="arrecadacao">
+            <div class="informacoes-adicionais">
                 <h4>Informações Adicionais:</h4>
-                <p>Valor Arrecadado: ${formatMoney(data.valorArrecadado)}</p>
-            </div>
-            
-            <div class="proximo-concurso">
-                <h4>Próximo Concurso:</h4>
-                ${data.dataProximoConcurso ? 
-                    `<p>Data: ${data.dataProximoConcurso}</p>` : ''}
-                ${data.acumulado ? 
-                    `<p class="acumulado">ACUMULOU!</p>
-                     <p>Valor Acumulado: ${formatMoney(data.valorAcumuladoProximoConcurso)}</p>` : 
-                    ''}
-                ${data.valorEstimadoProximoConcurso > 0 ?
-                    `<p>Prêmio Estimado: ${formatMoney(data.valorEstimadoProximoConcurso)}</p>` : 
-                    ''}
+                <p>Valor Arrecadado: ${formatarMoeda(data.valorArrecadado || data.arrecadacaoTotal || 0)}</p>
+                ${montarHtmlProximoConcurso(data)}
             </div>
         </div>
     `;
 }
 
-// Função para destacar números nos jogos
+// Funções de Montagem de HTML
+function montarHtmlPremiacoes(data) {
+    const premiacoes = data.premiacoes || data.listaRateioPremio || [];
+    if (!premiacoes.length) return '<p>Informações de premiação não disponíveis</p>';
+
+    return premiacoes.map(premio => {
+        const descricao = premio.descricao || premio.descricaoFaixa;
+        const ganhadores = premio.ganhadores || premio.numeroDeGanhadores || 0;
+        const valor = premio.valorPremio || 0;
+
+        return `
+            <div class="premio-item">
+                <p>${descricao}: 
+                   ${ganhadores} ${ganhadores === 1 ? 'ganhador' : 'ganhadores'} - 
+                   ${formatarMoeda(valor)}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+function montarHtmlProximoConcurso(data) {
+    const dataProximo = data.dataProximoConcurso || data.dataProximo;
+    const valorEstimado = data.valorEstimadoProximoConcurso || data.valorEstimado || 0;
+    const acumulado = data.acumulado || false;
+    const valorAcumulado = data.valorAcumuladoProximoConcurso || data.valorAcumulado || 0;
+
+    return `
+        <div class="proximo-concurso">
+            <h4>Próximo Concurso:</h4>
+            ${dataProximo ? `<p>Data: ${formatarData(dataProximo)}</p>` : ''}
+            ${acumulado ? `
+                <p class="acumulado">ACUMULOU!</p>
+                <p>Valor Acumulado: ${formatarMoeda(valorAcumulado)}</p>
+            ` : ''}
+            ${valorEstimado > 0 ? `<p>Prêmio Estimado: ${formatarMoeda(valorEstimado)}</p>` : ''}
+        </div>
+    `;
+}
+
+// Funções de Destaque de Números
 function highlightNumbers(dezenasSorteadas) {
-    console.log('Destacando números:', dezenasSorteadas);
-    
     if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
         console.error('Dezenas inválidas:', dezenasSorteadas);
         return;
     }
 
-    // Remove destaques anteriores
     document.querySelectorAll('.number-highlight').forEach(span => {
         const text = span.textContent;
         span.replaceWith(text);
     });
 
-    // Destaca os números em todos os jogos
     document.querySelectorAll('.game-numbers').forEach(gameDiv => {
         const numbersText = gameDiv.textContent;
         const numbers = numbersText.split(' ').map(n => n.trim());
@@ -460,41 +339,101 @@ function highlightNumbers(dezenasSorteadas) {
     });
 }
 
+// Funções de Formatação
+function formatarNumero(num) {
+    return String(num).padStart(2, '0');
+}
 
-
-// Função para destacar números
-function highlightNumbers(dezenasSorteadas) {
-    console.log('Destacando números:', dezenasSorteadas);
-    
-    if (!dezenasSorteadas || !Array.isArray(dezenasSorteadas)) {
-        console.error('Dezenas inválidas:', dezenasSorteadas);
-        return;
-    }
-
-    // Remove destaques anteriores
-    document.querySelectorAll('.number-highlight').forEach(span => {
-        const text = span.textContent;
-        span.replaceWith(text);
-    });
-
-    // Destaca os números em todos os jogos
-    document.querySelectorAll('.game-numbers').forEach(gameDiv => {
-        const numbersText = gameDiv.textContent;
-        const numbers = numbersText.split(' ').map(n => n.trim());
-        
-        // Cria o novo conteúdo com os números destacados
-        const newContent = numbers.map(num => {
-            const number = parseInt(num, 10);
-            if (dezenasSorteadas.includes(number)) {
-                return `<span class="number-highlight">${num}</span>`;
-            }
-            return num;
-        }).join(' ');
-        
-        gameDiv.innerHTML = newContent;
+function formatarMoeda(valor) {
+    const numero = typeof valor === 'string' ? parseFloat(valor.replace(/[^\d.-]/g, '')) : valor;
+    return (numero || 0).toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
     });
 }
-// Funções de exportação
+
+function formatarData(data) {
+    if (!data) return '';
+    
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+        return data;
+    }
+
+    try {
+        const date = new Date(data);
+        return date.toLocaleDateString('pt-BR');
+    } catch (e) {
+        return data;
+    }
+}
+
+// Funções de Exportação
+function exportToTxt() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    content += 'JOGOS NORMAIS:\n';
+    content = addGamesToContent(content, 'original-games');
+
+    content += '\nJOGOS +1:\n';
+    content = addGamesToContent(content, 'plus-one-games');
+
+    content += '\nJOGOS -1:\n';
+    content = addGamesToContent(content, 'minus-one-games');
+
+    content += '\nJOGOS ALEATÓRIOS:\n';
+    content = addGamesToContent(content, 'random-games');
+
+    downloadFile(content, 'palpites-mega-sena.txt', 'text/plain');
+}
+
+function exportToExcel() {
+    let content = 'PALPITES MEGA SENA\n\n';
+
+    content += 'Jogos Normais\n';
+    content = addGamesToContent(content, 'original-games', true);
+
+    content += '\nJogos +1\n';
+    content = addGamesToContent(content, 'plus-one-games', true);
+
+    content += '\nJogos -1\n';
+    content = addGamesToContent(content, 'minus-one-games', true);
+
+    content += '\nJogos Aleatórios\n';
+    content = addGamesToContent(content, 'random-games', true);
+
+    downloadFile(content, 'palpites-mega-sena.csv', 'text/csv');
+}
+
+function addGamesToContent(content, containerId, isExcel = false) {
+    const container = document.getElementById(containerId);
+    const gameCards = container.querySelectorAll('.game-card');
+
+    gameCards.forEach(card => {
+        const numbers = card.querySelector('.game-numbers').textContent;
+        if (isExcel) {
+            content += numbers.split(' ').join('\t') + '\n';
+        } else {
+            content += numbers + '\n';
+        }
+    });
+    
+    return content;
+}
+
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type: type });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
 async function exportToFormat(format) {
     const games = {
         'Jogos Originais': getGamesFromContainer('original-games'),
@@ -515,7 +454,6 @@ async function exportToFormat(format) {
         const data = await response.json();
         
         if (format === 'xlsx') {
-            // Para XLSX, usamos uma biblioteca específica
             const wb = XLSX.utils.book_new();
             Object.entries(data.content).forEach(([sheetName, rows]) => {
                 const ws = XLSX.utils.json_to_sheet(rows);
@@ -523,7 +461,6 @@ async function exportToFormat(format) {
             });
             XLSX.writeFile(wb, data.filename);
         } else {
-            // Para TXT e HTML
             const blob = new Blob([data.content], { 
                 type: format === 'txt' ? 'text/plain' : 'text/html' 
             });
@@ -541,7 +478,6 @@ async function exportToFormat(format) {
     }
 }
 
-// Função auxiliar para pegar jogos de um container
 function getGamesFromContainer(containerId) {
     const container = document.getElementById(containerId);
     return Array.from(container.querySelectorAll('.game-numbers'))
